@@ -1,0 +1,10 @@
+[
+  {"ticker": "PETR4", "tipo": "DIVIDENDO", "data_aprovacao": "2026-08-07", "data_com": "2026-08-21", "data_pagamento": "2026-10-20", "valor_por_acao": 0.45, "descricao": "Dividendos intermediários (DADO FICTÍCIO)"},
+  {"ticker": "PETR4", "tipo": "JCP", "data_aprovacao": "2026-08-07", "data_com": "2026-08-21", "data_pagamento": "2026-11-20", "valor_por_acao": 0.30, "descricao": "JCP intermediário (DADO FICTÍCIO)"},
+  {"ticker": "ITUB4", "tipo": "JCP", "data_aprovacao": "2026-09-01", "data_com": "2026-09-30", "data_pagamento": "2026-11-03", "valor_por_acao": 0.02, "descricao": "JCP mensal (DADO FICTÍCIO)"},
+  {"ticker": "ITUB4", "tipo": "BONIFICACAO", "data_aprovacao": "2026-09-10", "data_com": "2026-10-15", "multiplicador_acoes": 1.1, "fator_descricao": "10 para 11", "descricao": "Bonificação de 10% em ações (DADO FICTÍCIO)"},
+  {"ticker": "WEGE3", "tipo": "DESDOBRAMENTO", "data_aprovacao": "2026-09-05", "data_com": "2026-10-01", "multiplicador_acoes": 2.0, "fator_descricao": "1 para 2", "descricao": "Desdobramento 1:2 (DADO FICTÍCIO)"},
+  {"ticker": "MGLU3", "tipo": "GRUPAMENTO", "data_aprovacao": "2026-07-15", "data_com": "2026-08-01", "multiplicador_acoes": 0.1, "fator_descricao": "10 para 1", "descricao": "Grupamento 10:1 (DADO FICTÍCIO)"},
+  {"ticker": "HGLG11", "tipo": "RENDIMENTO", "data_aprovacao": "2026-09-30", "data_com": "2026-09-30", "data_pagamento": "2026-10-14", "valor_por_acao": 1.10, "descricao": "Rendimento mensal do FII (DADO FICTÍCIO)"},
+  {"ticker": "BBAS3", "tipo": "SUBSCRICAO", "data_aprovacao": "2026-09-12", "data_com": "2026-10-10", "preco_subscricao": 22.5, "fator_descricao": "5%", "descricao": "Direito de subscrição; negociação de 15/10 a 30/10 (DADO FICTÍCIO)"}
+]
