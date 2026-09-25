@@ -3,6 +3,7 @@
 import json
 import math
 from datetime import date
+from decimal import ROUND_HALF_UP, Decimal
 
 from app.providers.base import (
     TIPOS_EM_ACOES,
@@ -70,6 +71,10 @@ DEFINICOES = [
         },
     },
 ]
+
+
+def _centavos(valor: Decimal) -> float:
+    return float(valor.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))
 
 
 class ErroFerramenta(Exception):
@@ -147,10 +152,16 @@ class Ferramentas:
         for e in eventos[:MAX_EVENTOS]:
             item = {"evento": e.to_dict()}
             if e.tipo in TIPOS_EM_DINHEIRO and e.valor_por_acao is not None:
-                bruto = round(quantidade * e.valor_por_acao, 2)
+                # Decimal evita erros de ponto flutuante no arredondamento (ex.: 4,515 -> 4,52).
+                bruto = Decimal(quantidade) * Decimal(str(e.valor_por_acao))
                 aliquota = self._aliquota_ir_jcp if e.tipo == "JCP" else 0.0
-                ir = round(bruto * aliquota, 2)
-                item.update(valor_bruto=bruto, aliquota_ir=aliquota, ir_retido_estimado=ir, valor_liquido_estimado=round(bruto - ir, 2))
+                ir = Decimal(str(_centavos(bruto))) * Decimal(str(aliquota))
+                item.update(
+                    valor_bruto=_centavos(bruto),
+                    aliquota_ir=aliquota,
+                    ir_retido_estimado=_centavos(ir),
+                    valor_liquido_estimado=_centavos(Decimal(str(_centavos(bruto))) - Decimal(str(_centavos(ir)))),
+                )
             elif e.tipo in TIPOS_EM_ACOES and e.multiplicador_acoes:
                 nova = quantidade * e.multiplicador_acoes
                 inteira = math.floor(nova + 1e-9)

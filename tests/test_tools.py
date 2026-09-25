@@ -101,3 +101,8 @@ def test_brapi_erro_vira_erro_de_ferramenta():
     f = Ferramentas(_brapi(lambda req: httpx.Response(404)), 0.15)
     with pytest.raises(ErroFerramenta, match="não encontrado"):
         f.buscar_eventos({"ticker": "XPTO3"})
+
+
+def test_simulacao_arredonda_centavos_para_cima_no_meio(ferramentas):
+    s = ferramentas.simular_impacto({"ticker": "ITUB4", "quantidade": 1505, "tipos": ["JCP"]})["simulacoes"][0]
+    assert (s["valor_bruto"], s["ir_retido_estimado"], s["valor_liquido_estimado"]) == (30.10, 4.52, 25.58)

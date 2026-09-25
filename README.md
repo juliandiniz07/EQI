@@ -54,6 +54,8 @@ curl -s localhost:8000/api/chat -H 'Content-Type: application/json' \
 
 Testes: `pytest`
 
+Passo a passo detalhado de teste (inclusive para quem não é desenvolvedor): [COMO_TESTAR.md](COMO_TESTAR.md)
+
 ## Configuração
 
 | Variável | Padrão | Descrição |
