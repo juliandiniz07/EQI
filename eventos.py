@@ -75,7 +75,14 @@ def termo(texto: str | None) -> str:
 TIPOS_EVENTO: list[tuple[str, str, list[str]]] = [
     ("RECUPERACAO", "Recuperação", [r"recuperacao judicial", r"recuperacao extrajudicial", r"falencia"]),
     ("OPA", "OPA", [r"\bopa\b", r"\bopas\b", r"oferta publica de aquisicao"]),
-    ("CANCELAMENTO", "Cancelamento", [r"cancelamento (?:de |do |das |dos )?(?:\w+ )?(?:acoes|registro)"]),
+    (
+        "CANCELAMENTO",
+        "Cancelamento",
+        [
+            r"cancelamento (?:de |do |das |dos )?(?:\w+ )?(?:acoes|registro)",
+            r"(?:cancelamento|descontinuidade|descontinuacao|encerramento) (?:de |do |dos )?(?:programa (?:de )?)?bdrs?\b",
+        ],
+    ),
     ("DESDOBRAMENTO", "Desdobramento", [r"desdobramento", r"grupamento"]),
     ("LIQUIDACAO", "Liquidação", [r"liquidacao (?:do |de )?fundo"]),
     (

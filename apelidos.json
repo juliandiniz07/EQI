@@ -124,15 +124,19 @@
    ]
   },
   {
-   "nome": "Eletrobras",
-   "ticker": "ELET3",
+   "nome": "Axia Energia (ex-Eletrobras)",
+   "ticker": "AXIA3",
    "tipo_ativo": "ACAO",
    "apelidos": [
+    "axia",
+    "axia3",
+    "axia energia",
     "elet3",
     "elet6",
     "eletrobras"
    ],
    "busca": [
+    "axia energia",
     "centrais elet bras",
     "centrais eletricas brasileiras",
     "eletrobras"
@@ -1399,7 +1403,35 @@
    "busca": [
     "tellus",
     "tepp11"
+     ,{
+   "nome": "Banco Inter",
+   "ticker": "INBR32",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "inter",
+    "banco inter",
+    "inbr32",
+    "inter&co"
+   ],
+   "busca": [
+    "inter",
+    "inbr32"
    ]
+  },
+  {
+   "nome": "AXIA Energia",
+   "ticker": "AXIA3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "axia",
+    "axia3",
+    "axia energia"
+   ],
+   "busca": [
+    "axia energia",
+    "axia3"
+   ]
+  }]
   }
  ]
 }
