@@ -1,0 +1,1405 @@
+{
+ "_comentario": "Apelidos reconhecidos nas perguntas. 'apelidos' = como o assessor pode escrever (sem acento, minúsculo); 'busca' = trechos procurados no nome da empresa ou no assunto do fato. Edite à vontade: o sistema recarrega ao reiniciar a API.",
+ "empresas": [
+  {
+   "nome": "Petrobras",
+   "ticker": "PETR4",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "petr3",
+    "petr4",
+    "petro",
+    "petrobas",
+    "petrobras",
+    "petroleo brasileiro"
+   ],
+   "busca": [
+    "petrobras",
+    "petroleo brasileiro"
+   ]
+  },
+  {
+   "nome": "Vale",
+   "ticker": "VALE3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "vale",
+    "vale3"
+   ],
+   "busca": [
+    "vale",
+    "vale s a",
+    "vale sa"
+   ]
+  },
+  {
+   "nome": "Itaú Unibanco",
+   "ticker": "ITUB4",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "itau",
+    "itau unibanco",
+    "itub3",
+    "itub4"
+   ],
+   "busca": [
+    "itau",
+    "itau unibanco"
+   ]
+  },
+  {
+   "nome": "Bradesco",
+   "ticker": "BBDC4",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "bbdc3",
+    "bbdc4",
+    "bradesco"
+   ],
+   "busca": [
+    "bradesco"
+   ]
+  },
+  {
+   "nome": "Banco do Brasil",
+   "ticker": "BBAS3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "banco do brasil",
+    "bb",
+    "bbas3"
+   ],
+   "busca": [
+    "banco do brasil"
+   ]
+  },
+  {
+   "nome": "Santander Brasil",
+   "ticker": "SANB11",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "sanb11",
+    "santander"
+   ],
+   "busca": [
+    "santander"
+   ]
+  },
+  {
+   "nome": "BTG Pactual",
+   "ticker": "BPAC11",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "bpac11",
+    "btg",
+    "btg pactual"
+   ],
+   "busca": [
+    "btg pactual"
+   ]
+  },
+  {
+   "nome": "Ambev",
+   "ticker": "ABEV3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "abev3",
+    "ambev"
+   ],
+   "busca": [
+    "ambev"
+   ]
+  },
+  {
+   "nome": "Magazine Luiza",
+   "ticker": "MGLU3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "magalu",
+    "magazine luiza",
+    "mglu3"
+   ],
+   "busca": [
+    "magazine luiza"
+   ]
+  },
+  {
+   "nome": "Eletrobras",
+   "ticker": "ELET3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "elet3",
+    "elet6",
+    "eletrobras"
+   ],
+   "busca": [
+    "centrais elet bras",
+    "centrais eletricas brasileiras",
+    "eletrobras"
+   ]
+  },
+  {
+   "nome": "Sabesp",
+   "ticker": "SBSP3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "sabesp",
+    "sbsp3"
+   ],
+   "busca": [
+    "sabesp",
+    "saneamento basico do estado de sao paulo"
+   ]
+  },
+  {
+   "nome": "Brava Energia",
+   "ticker": "BRAV3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "3r petroleum",
+    "brav3",
+    "brava",
+    "brava energia",
+    "enauta"
+   ],
+   "busca": [
+    "3r petroleum",
+    "brava",
+    "brava energia",
+    "enauta"
+   ]
+  },
+  {
+   "nome": "PRIO",
+   "ticker": "PRIO3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "petro rio",
+    "petrorio",
+    "prio",
+    "prio3"
+   ],
+   "busca": [
+    "petro rio",
+    "petrorio",
+    "prio"
+   ]
+  },
+  {
+   "nome": "Light",
+   "ticker": "LIGT3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "light",
+    "ligt3"
+   ],
+   "busca": [
+    "light"
+   ]
+  },
+  {
+   "nome": "Oncoclínicas",
+   "ticker": "ONCO3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "onco",
+    "onco3",
+    "oncoclinicas"
+   ],
+   "busca": [
+    "oncoclinicas"
+   ]
+  },
+  {
+   "nome": "Gerdau",
+   "ticker": "GGBR4",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "gerdau",
+    "ggbr4",
+    "goau4"
+   ],
+   "busca": [
+    "gerdau"
+   ]
+  },
+  {
+   "nome": "Lupatech",
+   "ticker": "LUPA3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "lupa3",
+    "lupatech"
+   ],
+   "busca": [
+    "lupatech"
+   ]
+  },
+  {
+   "nome": "Americanas",
+   "ticker": "AMER3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "amer3",
+    "americanas"
+   ],
+   "busca": [
+    "americanas"
+   ]
+  },
+  {
+   "nome": "Azul",
+   "ticker": "AZUL4",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "azul",
+    "azul4"
+   ],
+   "busca": [
+    "azul"
+   ]
+  },
+  {
+   "nome": "Gol",
+   "ticker": "GOLL4",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "gol",
+    "goll4"
+   ],
+   "busca": [
+    "gol",
+    "gol linhas"
+   ]
+  },
+  {
+   "nome": "Oi",
+   "ticker": "OIBR3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "oi s a",
+    "oi sa",
+    "oibr3",
+    "oibr4"
+   ],
+   "busca": [
+    "oi s a",
+    "oi sa"
+   ]
+  },
+  {
+   "nome": "Embraer",
+   "ticker": "EMBR3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "embr3",
+    "embraer"
+   ],
+   "busca": [
+    "embraer"
+   ]
+  },
+  {
+   "nome": "WEG",
+   "ticker": "WEGE3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "weg",
+    "wege3"
+   ],
+   "busca": [
+    "weg"
+   ]
+  },
+  {
+   "nome": "Suzano",
+   "ticker": "SUZB3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "suzano",
+    "suzb3"
+   ],
+   "busca": [
+    "suzano"
+   ]
+  },
+  {
+   "nome": "JBS",
+   "ticker": "JBSS3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "jbs",
+    "jbss3"
+   ],
+   "busca": [
+    "jbs"
+   ]
+  },
+  {
+   "nome": "MBRF (Marfrig/BRF)",
+   "ticker": "MBRF3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "brf",
+    "brfs3",
+    "marfrig",
+    "mbrf",
+    "mbrf3",
+    "mrfg3"
+   ],
+   "busca": [
+    "brf",
+    "marfrig",
+    "mbrf"
+   ]
+  },
+  {
+   "nome": "Localiza",
+   "ticker": "RENT3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "localiza",
+    "rent3"
+   ],
+   "busca": [
+    "localiza"
+   ]
+  },
+  {
+   "nome": "Rede D'Or",
+   "ticker": "RDOR3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "rdor3",
+    "rede d or",
+    "rede dor"
+   ],
+   "busca": [
+    "rede d or",
+    "rede dor"
+   ]
+  },
+  {
+   "nome": "Hapvida",
+   "ticker": "HAPV3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "hapv3",
+    "hapvida"
+   ],
+   "busca": [
+    "hapvida"
+   ]
+  },
+  {
+   "nome": "Cosan",
+   "ticker": "CSAN3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "cosan",
+    "csan3"
+   ],
+   "busca": [
+    "cosan"
+   ]
+  },
+  {
+   "nome": "Raízen",
+   "ticker": "RAIZ4",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "raiz4",
+    "raizen"
+   ],
+   "busca": [
+    "raizen"
+   ]
+  },
+  {
+   "nome": "Usiminas",
+   "ticker": "USIM5",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "usim5",
+    "usiminas"
+   ],
+   "busca": [
+    "usiminas",
+    "usinas siderurgicas de minas gerais"
+   ]
+  },
+  {
+   "nome": "CSN",
+   "ticker": "CSNA3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "csn",
+    "csna3",
+    "siderurgica nacional"
+   ],
+   "busca": [
+    "csn",
+    "siderurgica nacional"
+   ]
+  },
+  {
+   "nome": "Cemig",
+   "ticker": "CMIG4",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "cemig",
+    "cmig4"
+   ],
+   "busca": [
+    "cemig",
+    "energetica de minas gerais"
+   ]
+  },
+  {
+   "nome": "Copel",
+   "ticker": "CPLE6",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "copel",
+    "cple3",
+    "cple6"
+   ],
+   "busca": [
+    "copel",
+    "paranaense de energia"
+   ]
+  },
+  {
+   "nome": "B3",
+   "ticker": "B3SA3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "b3sa3",
+    "b3 s a"
+   ],
+   "busca": [
+    "b3 s a",
+    "b3 sa"
+   ]
+  },
+  {
+   "nome": "Natura",
+   "ticker": "NATU3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "natu3",
+    "natura"
+   ],
+   "busca": [
+    "natura"
+   ]
+  },
+  {
+   "nome": "Grupo Casas Bahia",
+   "ticker": "BHIA3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "bhia3",
+    "casas bahia",
+    "via varejo"
+   ],
+   "busca": [
+    "casas bahia",
+    "via s a",
+    "via varejo"
+   ]
+  },
+  {
+   "nome": "CVC",
+   "ticker": "CVCB3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "cvc",
+    "cvcb3"
+   ],
+   "busca": [
+    "cvc"
+   ]
+  },
+  {
+   "nome": "Vibra",
+   "ticker": "VBBR3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "br distribuidora",
+    "vbbr3",
+    "vibra"
+   ],
+   "busca": [
+    "petrobras distribuidora",
+    "vibra"
+   ]
+  },
+  {
+   "nome": "Ultrapar",
+   "ticker": "UGPA3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "ipiranga",
+    "ugpa3",
+    "ultrapar"
+   ],
+   "busca": [
+    "ultrapar"
+   ]
+  },
+  {
+   "nome": "Rumo",
+   "ticker": "RAIL3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "rail3",
+    "rumo"
+   ],
+   "busca": [
+    "rumo"
+   ]
+  },
+  {
+   "nome": "TIM",
+   "ticker": "TIMS3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "tim",
+    "tims3"
+   ],
+   "busca": [
+    "tim participacoes",
+    "tim s a",
+    "tim sa"
+   ]
+  },
+  {
+   "nome": "Vivo (Telefônica)",
+   "ticker": "VIVT3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "telefonica",
+    "vivo",
+    "vivt3"
+   ],
+   "busca": [
+    "telefonica brasil"
+   ]
+  },
+  {
+   "nome": "Klabin",
+   "ticker": "KLBN11",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "klabin",
+    "klbn11"
+   ],
+   "busca": [
+    "klabin"
+   ]
+  },
+  {
+   "nome": "Braskem",
+   "ticker": "BRKM5",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "braskem",
+    "brkm5"
+   ],
+   "busca": [
+    "braskem"
+   ]
+  },
+  {
+   "nome": "Minerva",
+   "ticker": "BEEF3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "beef3",
+    "minerva"
+   ],
+   "busca": [
+    "minerva"
+   ]
+  },
+  {
+   "nome": "Assaí",
+   "ticker": "ASAI3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "asai3",
+    "assai"
+   ],
+   "busca": [
+    "assai",
+    "sendas"
+   ]
+  },
+  {
+   "nome": "Carrefour Brasil",
+   "ticker": "CRFB3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "carrefour",
+    "crfb3"
+   ],
+   "busca": [
+    "atacadao",
+    "carrefour"
+   ]
+  },
+  {
+   "nome": "Pão de Açúcar (GPA)",
+   "ticker": "PCAR3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "gpa",
+    "pao de acucar",
+    "pcar3"
+   ],
+   "busca": [
+    "pao de acucar"
+   ]
+  },
+  {
+   "nome": "Petz",
+   "ticker": "PETZ3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "petz",
+    "petz3"
+   ],
+   "busca": [
+    "petz"
+   ]
+  },
+  {
+   "nome": "Cogna",
+   "ticker": "COGN3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "cogn3",
+    "cogna"
+   ],
+   "busca": [
+    "cogna"
+   ]
+  },
+  {
+   "nome": "Taesa",
+   "ticker": "TAEE11",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "taee11",
+    "taesa"
+   ],
+   "busca": [
+    "taesa",
+    "transmissora alianca"
+   ]
+  },
+  {
+   "nome": "Engie Brasil",
+   "ticker": "EGIE3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "egie3",
+    "engie"
+   ],
+   "busca": [
+    "engie"
+   ]
+  },
+  {
+   "nome": "Equatorial",
+   "ticker": "EQTL3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "eqtl3",
+    "equatorial"
+   ],
+   "busca": [
+    "equatorial"
+   ]
+  },
+  {
+   "nome": "Energisa",
+   "ticker": "ENGI11",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "energisa",
+    "engi11"
+   ],
+   "busca": [
+    "energisa"
+   ]
+  },
+  {
+   "nome": "Eneva",
+   "ticker": "ENEV3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "enev3",
+    "eneva"
+   ],
+   "busca": [
+    "eneva"
+   ]
+  },
+  {
+   "nome": "Ecopetrol",
+   "ticker": null,
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "ecopetrol"
+   ],
+   "busca": [
+    "ecopetrol"
+   ]
+  },
+  {
+   "nome": "IRB Re",
+   "ticker": "IRBR3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "irb",
+    "irbr3"
+   ],
+   "busca": [
+    "irb"
+   ]
+  },
+  {
+   "nome": "Caixa Seguridade",
+   "ticker": "CXSE3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "caixa seguridade",
+    "cxse3"
+   ],
+   "busca": [
+    "caixa seguridade"
+   ]
+  },
+  {
+   "nome": "BB Seguridade",
+   "ticker": "BBSE3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "bb seguridade",
+    "bbse3"
+   ],
+   "busca": [
+    "bb seguridade"
+   ]
+  },
+  {
+   "nome": "Porto Seguro",
+   "ticker": "PSSA3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "porto seguro",
+    "pssa3"
+   ],
+   "busca": [
+    "porto seguro"
+   ]
+  },
+  {
+   "nome": "Totvs",
+   "ticker": "TOTS3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "tots3",
+    "totvs"
+   ],
+   "busca": [
+    "totvs"
+   ]
+  },
+  {
+   "nome": "Lojas Renner",
+   "ticker": "LREN3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "lren3",
+    "renner"
+   ],
+   "busca": [
+    "renner"
+   ]
+  },
+  {
+   "nome": "Méliuz",
+   "ticker": "CASH3",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "cash3",
+    "meliuz"
+   ],
+   "busca": [
+    "meliuz"
+   ]
+  },
+  {
+   "nome": "Nubank",
+   "ticker": "ROXO34",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "nu",
+    "nubank",
+    "roxo34"
+   ],
+   "busca": [
+    "nu holdings",
+    "nubank"
+   ]
+  },
+  {
+   "nome": "Inter",
+   "ticker": "INBR32",
+   "tipo_ativo": "ACAO",
+   "apelidos": [
+    "banco inter",
+    "inbr32",
+    "inter"
+   ],
+   "busca": [
+    "banco inter",
+    "inter co"
+   ]
+  },
+  {
+   "nome": "Maxi Renda",
+   "ticker": "MXRF11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "maxi renda",
+    "mxrf11"
+   ],
+   "busca": [
+    "maxi renda",
+    "mxrf11"
+   ]
+  },
+  {
+   "nome": "CSHG Logística",
+   "ticker": "HGLG11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "cshg logistica",
+    "hglg",
+    "hglg11"
+   ],
+   "busca": [
+    "cshg logistica",
+    "hglg",
+    "hglg11"
+   ]
+  },
+  {
+   "nome": "Kinea Renda Imobiliária",
+   "ticker": "KNRI11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "kinea renda imobiliaria",
+    "knri11"
+   ],
+   "busca": [
+    "kinea renda imobiliaria",
+    "knri11"
+   ]
+  },
+  {
+   "nome": "XP Malls",
+   "ticker": "XPML11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "xp malls",
+    "xpml11"
+   ],
+   "busca": [
+    "xp malls",
+    "xpml11"
+   ]
+  },
+  {
+   "nome": "Vinci Shopping Centers",
+   "ticker": "VISC11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "vinci shopping",
+    "vinci shopping centers",
+    "visc11"
+   ],
+   "busca": [
+    "vinci shopping",
+    "visc11"
+   ]
+  },
+  {
+   "nome": "CSHG Renda Urbana",
+   "ticker": "HGRU11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "cshg renda urbana",
+    "hgru11"
+   ],
+   "busca": [
+    "cshg renda urbana",
+    "hgru11"
+   ]
+  },
+  {
+   "nome": "Kinea Rendimentos Imobiliários",
+   "ticker": "KNCR11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "kinea rendimentos",
+    "kncr11"
+   ],
+   "busca": [
+    "kinea rendimentos",
+    "kncr11"
+   ]
+  },
+  {
+   "nome": "Kinea Índices de Preços",
+   "ticker": "KNIP11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "kinea indices de precos",
+    "kinea ipca",
+    "knip11"
+   ],
+   "busca": [
+    "kinea indices de precos",
+    "knip11"
+   ]
+  },
+  {
+   "nome": "Kinea Securities",
+   "ticker": "KNSC11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "kinea securities",
+    "knsc11"
+   ],
+   "busca": [
+    "kinea securities",
+    "knsc11"
+   ]
+  },
+  {
+   "nome": "BTG Pactual Logística",
+   "ticker": "BTLG11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "btg logistica",
+    "btg pactual logistica",
+    "btlg11"
+   ],
+   "busca": [
+    "btg logistica",
+    "btg pactual logistica",
+    "btlg11"
+   ]
+  },
+  {
+   "nome": "XP Log",
+   "ticker": "XPLG11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "xp log",
+    "xplg11"
+   ],
+   "busca": [
+    "xp log",
+    "xplg11"
+   ]
+  },
+  {
+   "nome": "Hectare CE",
+   "ticker": "HCTR11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "hctr11",
+    "hectare"
+   ],
+   "busca": [
+    "hctr11",
+    "hectare"
+   ]
+  },
+  {
+   "nome": "Iridium Recebíveis",
+   "ticker": "IRDM11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "irdm11",
+    "iridium"
+   ],
+   "busca": [
+    "irdm11",
+    "iridium"
+   ]
+  },
+  {
+   "nome": "Capitânia Securities",
+   "ticker": "CPTS11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "capitania",
+    "cpts11"
+   ],
+   "busca": [
+    "capitania",
+    "cpts11"
+   ]
+  },
+  {
+   "nome": "REC Recebíveis",
+   "ticker": "RECR11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "rec recebiveis",
+    "recr11"
+   ],
+   "busca": [
+    "rec recebiveis",
+    "recr11"
+   ]
+  },
+  {
+   "nome": "Valora Hedge Fund",
+   "ticker": "VGHF11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "valora hedge",
+    "vghf11"
+   ],
+   "busca": [
+    "valora hedge",
+    "vghf11"
+   ]
+  },
+  {
+   "nome": "Valora CRI",
+   "ticker": "VGIP11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "valora cri",
+    "valora ri",
+    "vgip11"
+   ],
+   "busca": [
+    "valora",
+    "vgip11"
+   ]
+  },
+  {
+   "nome": "Hedge Brasil Shopping",
+   "ticker": "HGBS11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "hedge brasil shopping",
+    "hgbs11"
+   ],
+   "busca": [
+    "hedge brasil shopping",
+    "hgbs11"
+   ]
+  },
+  {
+   "nome": "RBR Alpha",
+   "ticker": "RBRF11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "rbr alpha",
+    "rbrf11"
+   ],
+   "busca": [
+    "rbr alpha",
+    "rbrf11"
+   ]
+  },
+  {
+   "nome": "RBR Rendimento High Grade",
+   "ticker": "RBRR11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "rbr high grade",
+    "rbr rendimento",
+    "rbrr11"
+   ],
+   "busca": [
+    "rbr high grade",
+    "rbr rendimento high grade",
+    "rbrr11"
+   ]
+  },
+  {
+   "nome": "TG Ativo Real",
+   "ticker": "TGAR11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "tg ativo real",
+    "tgar11"
+   ],
+   "busca": [
+    "tg ativo real",
+    "tgar11"
+   ]
+  },
+  {
+   "nome": "Vinci Logística",
+   "ticker": "VILG11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "vilg11",
+    "vinci logistica"
+   ],
+   "busca": [
+    "vilg11",
+    "vinci logistica"
+   ]
+  },
+  {
+   "nome": "Bresco Logística",
+   "ticker": "BRCO11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "brco11",
+    "bresco"
+   ],
+   "busca": [
+    "brco11",
+    "bresco"
+   ]
+  },
+  {
+   "nome": "HSI Malls",
+   "ticker": "HSML11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "hsi malls",
+    "hsml11"
+   ],
+   "busca": [
+    "hsi malls",
+    "hsml11"
+   ]
+  },
+  {
+   "nome": "JS Real Estate",
+   "ticker": "JSRE11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "js real estate",
+    "jsre11"
+   ],
+   "busca": [
+    "js real estate",
+    "jsre11"
+   ]
+  },
+  {
+   "nome": "VBI Prime Properties",
+   "ticker": "PVBI11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "pvbi11",
+    "vbi prime"
+   ],
+   "busca": [
+    "pvbi11",
+    "vbi prime"
+   ]
+  },
+  {
+   "nome": "VBI Logístico",
+   "ticker": "LVBI11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "lvbi11",
+    "vbi logistico"
+   ],
+   "busca": [
+    "lvbi11",
+    "vbi logistico"
+   ]
+  },
+  {
+   "nome": "Guardian Real Estate",
+   "ticker": "GARE11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "gare11",
+    "guardian"
+   ],
+   "busca": [
+    "gare11",
+    "guardian"
+   ]
+  },
+  {
+   "nome": "TRX Real Estate",
+   "ticker": "TRXF11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "trx",
+    "trxf11"
+   ],
+   "busca": [
+    "trx",
+    "trxf11"
+   ]
+  },
+  {
+   "nome": "Alianza Trust Renda Imobiliária",
+   "ticker": "ALZR11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "alianza",
+    "alzr11"
+   ],
+   "busca": [
+    "alianza",
+    "alzr11"
+   ]
+  },
+  {
+   "nome": "Riza Terrax",
+   "ticker": "RZTR11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "riza terrax",
+    "rztr11",
+    "terrax"
+   ],
+   "busca": [
+    "rztr11",
+    "terrax"
+   ]
+  },
+  {
+   "nome": "Mauá Capital Recebíveis",
+   "ticker": "MCCI11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "maua capital",
+    "mcci11"
+   ],
+   "busca": [
+    "maua capital",
+    "mcci11"
+   ]
+  },
+  {
+   "nome": "BTG Pactual Crédito Imobiliário",
+   "ticker": "BTCI11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "btci11",
+    "btg credito imobiliario"
+   ],
+   "busca": [
+    "btci11",
+    "btg pactual credito imobiliario"
+   ]
+  },
+  {
+   "nome": "CSHG Real Estate",
+   "ticker": "HGRE11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "cshg real estate",
+    "hgre11"
+   ],
+   "busca": [
+    "cshg real estate",
+    "hgre11"
+   ]
+  },
+  {
+   "nome": "GGR Covepi Renda",
+   "ticker": "GGRC11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "covepi",
+    "ggr covepi",
+    "ggrc11"
+   ],
+   "busca": [
+    "covepi",
+    "ggrc11"
+   ]
+  },
+  {
+   "nome": "XP Industrial",
+   "ticker": "XPIN11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "xp industrial",
+    "xpin11"
+   ],
+   "busca": [
+    "xp industrial",
+    "xpin11"
+   ]
+  },
+  {
+   "nome": "Pátria Log",
+   "ticker": "PATL11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "patl11",
+    "patria log"
+   ],
+   "busca": [
+    "patl11",
+    "patria log"
+   ]
+  },
+  {
+   "nome": "Kinea Hedge Fund",
+   "ticker": "KNHF11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "kinea hedge fund",
+    "knhf11"
+   ],
+   "busca": [
+    "kinea hedge fund",
+    "knhf11"
+   ]
+  },
+  {
+   "nome": "XP Crédito Imobiliário",
+   "ticker": "XPCI11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "xp credito imobiliario",
+    "xpci11"
+   ],
+   "busca": [
+    "xp credito imobiliario",
+    "xpci11"
+   ]
+  },
+  {
+   "nome": "Tellus Properties",
+   "ticker": "TEPP11",
+   "tipo_ativo": "FII",
+   "apelidos": [
+    "tellus",
+    "tepp11"
+   ],
+   "busca": [
+    "tellus",
+    "tepp11"
+   ]
+  }
+ ]
+}

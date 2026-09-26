@@ -1,0 +1,15 @@
+[Unit]
+Description=Assistente EQI - API de eventos corporativos
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/eqi-eventos
+EnvironmentFile=/home/ubuntu/eqi-eventos/.env
+ExecStart=/home/ubuntu/eqi-eventos/.venv/bin/python api.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
