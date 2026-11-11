@@ -1,0 +1,26 @@
+# Evolution API v2 + Postgres + Redis. Uso:  cp .env.evolution.example .env.evolution && docker compose -f evolution-compose.yml --env-file .env.evolution up -d
+# Se você já tem a Evolution rodando na VPS, NÃO suba este arquivo: use a sua e só aponte o webhook.
+services:
+  evolution:
+    image: evoapicloud/evolution-api:v2.3.7   # use a mesma imagem que já funcionou na sua VPS
+    restart: unless-stopped
+    ports: ["127.0.0.1:8080:8080"]            # só local; ninguém de fora acessa
+    environment:
+      SERVER_URL: http://localhost:8080
+      AUTHENTICATION_API_KEY: ${EVOLUTION_APIKEY}
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evo:${PG_SENHA}@postgres:5432/evolution
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis:6379/6
+      CACHE_LOCAL_ENABLED: "false"
+    volumes: [evo_instances:/evolution/instances]
+    depends_on: [postgres, redis]
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment: { POSTGRES_USER: evo, POSTGRES_PASSWORD: "${PG_SENHA}", POSTGRES_DB: evolution }
+    volumes: [pg_data:/var/lib/postgresql/data]
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+volumes: { evo_instances: {}, pg_data: {} }
