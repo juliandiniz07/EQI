@@ -26,6 +26,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 import eventos
+import grupos
 from consulta import Interpretacao, Interpretador
 
 load_dotenv()
@@ -231,6 +232,18 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
         token = authorization.removeprefix("Bearer ").strip()
         if not token or not auth.valido(token):
             raise HTTPException(401, "Sessão expirada. Entre novamente.")
+
+    cfg_grupos = grupos.Config()
+    if cfg_grupos.ativo:
+        classificador = None
+        if os.getenv("GEMINI_API_KEY"):
+            modelos_c = [m.strip() for m in os.getenv("GEMINI_MODELOS", "gemini-flash-lite-latest,gemini-flash-latest").split(",") if m.strip()]
+            classificador = grupos.ClassificadorGemini(os.environ["GEMINI_API_KEY"], modelos_c)
+        robo = grupos.RoboDeGrupos(
+            cfg_grupos, interpretador, redator, classificador, grupos.EnviadorZapi(cfg_grupos), resposta_sem_ia, hoje=hoje,
+        )
+        app.include_router(grupos.criar_router(robo))
+        log.info("Robô de grupos habilitado (%d grupo(s), modo %s)", len(cfg_grupos.permitidos), cfg_grupos.modo)
 
     @app.get("/")
     def index():

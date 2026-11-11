@@ -22,7 +22,7 @@ _TIPOS_PERGUNTA = [
     ("FUSAO", r"\bfus(?:ao|oes)\b|incorpora|aquisic|\bcis(?:ao|oes)\b|\bm ?& ?a\b|compra de empresa"),
     ("RECUPERACAO", r"recuperac|\bfalenc|\brj\b|reestrutura"),
     ("CANCELAMENTO", r"cancelamento|deslist|cancelou"),
-    ("EMISSAO", r"emiss(?:ao|oes)|emitiu|emitiram|oferta (?:publica )?de cotas|subscric|follow ?on|novas cotas"),
+    ("EMISSAO", r"emiss(?:ao|oes)|emitiu|emitiram|oferta (?:publica )?de cotas|subscric|follow ?on|novas cotas|aumento de capital|direito de preferencia|bonificac|\bsobras?\b"),
     ("DESDOBRAMENTO", r"desdobr|grupament|\bsplit\b|\binplit\b"),
     ("LIQUIDACAO", r"liquidac"),
 ]
