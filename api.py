@@ -240,7 +240,7 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
             modelos_c = [m.strip() for m in os.getenv("GEMINI_MODELOS", "gemini-flash-lite-latest,gemini-flash-latest").split(",") if m.strip()]
             classificador = grupos.ClassificadorGemini(os.environ["GEMINI_API_KEY"], modelos_c)
         robo = grupos.RoboDeGrupos(
-            cfg_grupos, interpretador, redator, classificador, grupos.EnviadorZapi(cfg_grupos), resposta_sem_ia, hoje=hoje,
+            cfg_grupos, interpretador, redator, classificador, grupos.EnviadorEvolution(cfg_grupos), resposta_sem_ia, hoje=hoje,
         )
         app.include_router(grupos.criar_router(robo))
         log.info("Robô de grupos habilitado (%d grupo(s), modo %s)", len(cfg_grupos.permitidos), cfg_grupos.modo)

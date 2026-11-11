@@ -6,7 +6,7 @@ import eventos
 import grupos
 from tests.conftest import HOJE
 
-GRUPO = "120363019502650977-group"
+GRUPO = "120363019502650977@g.us"
 
 
 class Redator:
@@ -30,8 +30,9 @@ class Enviador:
         self.enviadas.append((grupo, texto))
 
 
-def msg(texto, grupo=GRUPO, quem="5511999990001", mid="m1", **extra):
-    return {"isGroup": True, "phone": grupo, "participantPhone": quem, "fromMe": False, "messageId": mid, "text": {"message": texto}, **extra}
+def msg(texto, grupo=GRUPO, quem="5511999990001", mid="m1", fromMe=False, **extra):
+    return {"event": "messages.upsert", "data": {"key": {"remoteJid": grupo, "fromMe": fromMe, "id": mid, "participant": quem + "@s.whatsapp.net"},
+            "message": {"conversation": texto}}}
 
 
 @pytest.fixture
@@ -75,14 +76,14 @@ def test_modo_sombra_nao_envia(montar):
 
 def test_ignora_grupo_nao_autorizado_e_nao_grava(montar):
     robo, env = montar()
-    assert roda(robo, msg("teve OPA?", grupo="999-group"))[0] == "ignorado:grupo_nao_autorizado"
+    assert roda(robo, msg("teve OPA?", grupo="999@g.us"))[0] == "ignorado:grupo_nao_autorizado"
     with eventos.conectar() as con:
         assert con.execute("SELECT COUNT(*) FROM grupos_log").fetchone()[0] == 0
 
 
 def test_ignora_privado_proprio_e_duplicada(montar):
     robo, _ = montar()
-    assert roda(robo, {**msg("teve OPA?"), "isGroup": False})[0].startswith("ignorado")
+    assert roda(robo, msg("teve OPA?", grupo="5511999990002@s.whatsapp.net"))[0].startswith("ignorado")
     assert roda(robo, msg("teve OPA?", fromMe=True))[0].startswith("ignorado")
     assert roda(robo, msg("teve OPA?", mid="d"))[1] == "enviado"
     assert roda(robo, msg("teve OPA?", mid="d"))[0] == "ignorado:duplicada"
@@ -117,6 +118,6 @@ def test_limite_por_pessoa(montar):
 def test_webhook_exige_segredo(montar, banco, monkeypatch):
     montar()
     c = TestClient(api.criar_app(redator=Redator(), hoje=lambda: HOJE))
-    assert c.post("/zapi/webhook/errado", json=msg("teve OPA?")).status_code == 404
-    r = c.post("/zapi/webhook/seg", json={**msg("oi"), "isGroup": False})
+    assert c.post("/evolution/webhook/errado", json=msg("teve OPA?")).status_code == 404
+    r = c.post("/evolution/webhook/seg", json=msg("oi", grupo="5511@s.whatsapp.net"))
     assert r.status_code == 200 and r.json()["status"].startswith("ignorado")

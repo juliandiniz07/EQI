@@ -1,6 +1,6 @@
-"""Robô nos grupos de WhatsApp (Z-API).
+"""Robô nos grupos de WhatsApp (Evolution API).
 
-Fluxo: Z-API -> POST /zapi/webhook/<segredo> -> filtros -> classificador de relevância ->
+Fluxo: Evolution API (evento MESSAGES_UPSERT) -> POST /evolution/webhook/<segredo> -> filtros -> classificador de relevância ->
 busca no banco de eventos -> resposta no mesmo grupo.
 
 Segurança e custo:
@@ -53,10 +53,9 @@ cumprimentos, assuntos operacionais, ou quando a mensagem é só uma resposta/co
 class Config:
     def __init__(self):
         e = os.getenv
-        self.instancia = e("ZAPI_INSTANCE", "")
-        self.token = e("ZAPI_TOKEN", "")
-        self.client_token = e("ZAPI_CLIENT_TOKEN", "")
-        self.base = e("ZAPI_BASE_URL", "https://api.z-api.io").rstrip("/")
+        self.url = e("EVOLUTION_URL", "http://localhost:8080").rstrip("/")
+        self.apikey = e("EVOLUTION_APIKEY", "")
+        self.instancia = e("EVOLUTION_INSTANCE", "")
         self.segredo = e("GRUPOS_WEBHOOK_SEGREDO", "")
         self.permitidos = {_id_grupo(g) for g in e("GRUPOS_PERMITIDOS", "").split(",") if g.strip()}
         self.modo = e("GRUPOS_MODO", "sombra").strip().lower()  # sombra | ativo
@@ -70,7 +69,7 @@ class Config:
 
 
 def _id_grupo(valor: str | None) -> str:
-    """Normaliza o ID do grupo: '1203...-group', '1203...@g.us' e '1203...' viram '1203...'."""
+    """Normaliza o ID do grupo: '1203...@g.us', '1203...-group' e '1203...' viram '1203...'."""
     v = (valor or "").strip()
     return re.sub(r"(-group|@g\.us)$", "", v)
 
@@ -110,15 +109,17 @@ class ClassificadorGemini:
         return None
 
 
-class EnviadorZapi:
+class EnviadorEvolution:
     def __init__(self, cfg: Config):
         self._cfg = cfg
 
     def enviar(self, grupo: str, texto: str) -> None:
         c = self._cfg
-        url = f"{c.base}/instances/{c.instancia}/token/{c.token}/send-text"
-        headers = {"Client-Token": c.client_token} if c.client_token else {}
-        r = httpx.post(url, json={"phone": grupo, "message": texto, "delayTyping": 3}, headers=headers, timeout=30)
+        r = httpx.post(
+            f"{c.url}/message/sendText/{c.instancia}",
+            json={"number": grupo, "text": texto, "delay": 2000},
+            headers={"apikey": c.apikey}, timeout=30,
+        )
         r.raise_for_status()
 
 
@@ -173,23 +174,27 @@ class RoboDeGrupos:
     # -- entrada: devolve o que será processado (ou o motivo de ignorar) ---------------
 
     def receber(self, p: dict) -> tuple[str, dict | None]:
-        if not p.get("isGroup") or p.get("fromMe") or p.get("fromApi"):
+        d = p.get("data") or {}
+        key = d.get("key") or {}
+        jid = key.get("remoteJid") or ""
+        if not jid.endswith("@g.us") or key.get("fromMe"):
             return "ignorado:nao_e_mensagem_de_grupo", None
-        grupo = _id_grupo(p.get("phone"))
+        grupo = _id_grupo(jid)
         if grupo not in self.cfg.permitidos:
             return "ignorado:grupo_nao_autorizado", None  # nada é gravado de grupos fora da lista
-        texto = _limpar((p.get("text") or {}).get("message", ""))
+        msg = d.get("message") or {}
+        texto = _limpar(msg.get("conversation") or (msg.get("extendedTextMessage") or {}).get("text") or "")
         if not texto:
             return "ignorado:sem_texto", None
-        mid = p.get("messageId")
-        quem = p.get("participantPhone") or "?"
+        mid = key.get("id")
+        quem = (key.get("participant") or "?").split("@")[0]
         with self._lock:
             if mid and mid in self._vistos:
                 return "ignorado:duplicada", None
             self._vistos.append(mid)
             anteriores = [f"{q}: {t}" for _, q, t in self._recentes[grupo]][-4:]
             self._recentes[grupo].append((time.monotonic(), quem, texto))
-        return "ok", {"destino": p.get("phone"), "grupo": grupo, "quem": quem, "texto": texto, "contexto": anteriores, "mid": mid}
+        return "ok", {"destino": jid, "grupo": grupo, "quem": quem, "texto": texto, "contexto": anteriores, "mid": mid}
 
     # -- decisão e resposta -----------------------------------------------------------
 
@@ -265,7 +270,7 @@ class RoboDeGrupos:
 def criar_router(robo: RoboDeGrupos) -> APIRouter:
     router = APIRouter()
 
-    @router.post("/zapi/webhook/{segredo}")
+    @router.post("/evolution/webhook/{segredo}")
     async def webhook(segredo: str, request: Request, fundo: BackgroundTasks):
         if not robo.cfg.segredo or segredo != robo.cfg.segredo:
             raise HTTPException(404)
@@ -275,7 +280,7 @@ def criar_router(robo: RoboDeGrupos) -> APIRouter:
             return {"ok": True}
         motivo, msg = robo.receber(payload)
         if msg:
-            fundo.add_task(robo.processar, msg)  # responde 200 ao Z-API na hora; o resto roda depois
+            fundo.add_task(robo.processar, msg)  # responde 200 à Evolution na hora; o resto roda depois
         return {"ok": True, "status": motivo}
 
     return router
