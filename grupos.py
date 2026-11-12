@@ -225,7 +225,15 @@ class RoboDeGrupos:
         }
         if it.ticker:
             dados["ticker_da_empresa"] = it.ticker
-        resp = self.redator.redigir(texto, historico, dados) if self.redator else None
+        documentos = []
+        if self.redator and atendimento.pergunta_especifica(texto):
+            documentos, duvidas = atendimento.documentos_para_pergunta(self.redator, texto, achados)
+            if documentos or duvidas:
+                dados.update(atendimento.contexto_documentos(documentos, duvidas))
+        if self.redator and documentos:
+            resp = self.redator.redigir(texto, historico, dados, documentos=documentos)
+        else:
+            resp = self.redator.redigir(texto, historico, dados) if self.redator else None
         camada = "ia"
         if not resp:
             resp, camada = self.resposta_sem_ia(it, mostrados, len(achados), ampliado), "regra"

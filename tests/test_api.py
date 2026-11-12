@@ -150,3 +150,14 @@ def test_fato_relevante_de_titulo_desconhecido_aparece_por_empresa_mas_nao_na_pe
     assert all("Raízen" not in e["empresa"] and "RAIZEN" not in e["empresa"] for e in geral["eventos"])
     _, _, dados = cliente.redator.chamadas[0]
     assert "instrucao_extra" in dados
+
+
+def test_anexa_documentos_quando_a_pergunta_e_especifica(cliente, monkeypatch):
+    import atendimento
+    atendimento._cache_docs.clear()
+    monkeypatch.setattr(atendimento, "_baixar_cacheado", lambda link, fn=None: ("pdf", b"%PDF-1"))
+    recebidos = {}
+    cliente.redator.redigir = lambda p, h, d, documentos=None: recebidos.update(docs=documentos, dados=d) or "resposta"
+    r = cliente.post("/consultar", json={"pergunta": "qual o prazo da Gerdau?"}, headers=entrar(cliente)).json()
+    assert r["resposta"] == "resposta" and recebidos["docs"]
+    assert "instrucao_resposta_direta" in recebidos["dados"] and recebidos["dados"]["documentos_anexados"]

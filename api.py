@@ -133,7 +133,35 @@ class RedatorGemini:
         self._client = genai.Client(api_key=api_key)
         self._modelos = modelos
 
-    def redigir(self, pergunta: str, historico: list[dict], dados: dict) -> str | None:
+    def escolher_eventos(self, pergunta: str, candidatos: list[dict], maximo: int = 2) -> dict | None:
+        """Índices dos comunicados que melhor respondem à pergunta (empate: o mais recente). None se a IA não respondeu."""
+        from google.genai import errors, types
+
+        lista = "\n".join(f"{i} | {e['data']} | {e['categoria']} | {e['assunto'][:160]}" for i, e in enumerate(candidatos))
+        instrucao = (
+            "Você escolhe quais comunicados de uma empresa devem ser abertos para responder à pergunta de um assessor. "
+            "A lista está do mais recente para o mais antigo. Regras: se houver várias operações ou edições da mesma natureza "
+            "(ex.: 5ª e 6ª operação), escolha SEMPRE a mais recente; prefira o comunicado que traz a informação pedida "
+            "(ex.: 'período de manifestação' para prazos, 'resultado' para o que foi decidido). "
+            'Se a pergunta não permitir saber de qual evento se trata (eventos de natureza diferente e nada na pergunta indica qual), '
+            'responda {"claro": false, "candidatos": [até 4 índices]}. Caso contrário, responda '
+            f'{{"claro": true, "ids": [até {maximo} índices]}}.'
+        )
+        config = types.GenerateContentConfig(system_instruction=instrucao, temperature=0, max_output_tokens=100, response_mime_type="application/json")
+        for modelo in self._modelos:
+            try:
+                resp = self._client.models.generate_content(model=modelo, contents=f"PERGUNTA: {pergunta}\n\nCOMUNICADOS:\n{lista}", config=config)
+                r = json.loads(resp.text)
+                if r.get("claro") is False:
+                    return {"claro": False, "candidatos": [int(i) for i in r.get("candidatos", [])]}
+                return {"claro": True, "ids": [int(i) for i in r["ids"]]}
+            except errors.APIError as e:
+                log.warning("Seleção de documentos: falha no modelo %s (%s)", modelo, getattr(e, "code", "?"))
+            except Exception:
+                log.exception("Seleção de documentos: erro inesperado no modelo %s", modelo)
+        return None
+
+    def redigir(self, pergunta: str, historico: list[dict], dados: dict, documentos: list[dict] | None = None) -> str | None:
         """Texto da resposta, ou None se nenhum modelo respondeu (cota esgotada, erro...)."""
         from google.genai import errors, types
 
@@ -144,7 +172,13 @@ class RedatorGemini:
                 continue  # a conversa enviada à IA precisa começar pelo usuário
             conteudos.append(types.Content(role=papel, parts=[types.Part.from_text(text=m["content"][:3000])]))
         texto = f"DADOS:\n{json.dumps(dados, ensure_ascii=False, indent=1)}\n\nPERGUNTA DO ASSESSOR: {pergunta}"
-        conteudos.append(types.Content(role="user", parts=[types.Part.from_text(text=texto)]))
+        partes = []
+        for d in documentos or []:
+            partes.append(types.Part.from_text(text=f"DOCUMENTO ANEXADO: {d['rotulo']}"))
+            partes.append(
+                types.Part.from_bytes(data=d["conteudo"], mime_type="application/pdf") if d["tipo"] == "pdf" else types.Part.from_text(text=d["conteudo"])
+            )
+        conteudos.append(types.Content(role="user", parts=[*partes, types.Part.from_text(text=texto)]))
         config = types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT, temperature=0.4, max_output_tokens=2048)
 
         for modelo in self._modelos:
@@ -292,7 +326,15 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
         if interp.ticker:
             contexto["ticker_da_empresa"] = interp.ticker
 
-        texto = redator.redigir(dados.pergunta, historico, contexto) if redator else None
+        documentos = []
+        if redator and atendimento.pergunta_especifica(dados.pergunta):
+            documentos, duvidas = atendimento.documentos_para_pergunta(redator, dados.pergunta, encontrados)
+            if documentos or duvidas:
+                contexto.update(atendimento.contexto_documentos(documentos, duvidas))
+        if redator and documentos:
+            texto = redator.redigir(dados.pergunta, historico, contexto, documentos=documentos)
+        else:
+            texto = redator.redigir(dados.pergunta, historico, contexto) if redator else None
         if not texto:
             texto = resposta_sem_ia(interp, mostrados, len(encontrados), ampliado)
         return {"resposta": texto, "eventos": mostrados, "meta": meta}
