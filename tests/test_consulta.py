@@ -83,3 +83,11 @@ def test_busca(banco, interp):
         assert petro[0]["tipo_evento"] == "FUSAO"
         ecopetrol = eventos.buscar(con, i(interp, "e a Ecopetrol?").filtro())
         assert len(ecopetrol) == 2  # achada pelo assunto
+
+
+def test_resgate_e_conversao_da_axia(interp):
+    import eventos
+    titulo = "6ª operação de resgate ou conversão das ações PNC"
+    assert eventos.eh_relevante(titulo) and eventos.classificar(titulo) == "RESGATE"
+    r = i(interp, "resgate ou conversão de axia?")
+    assert r.empresa and "RESGATE" in r.tipos

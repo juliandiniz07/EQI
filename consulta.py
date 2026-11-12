@@ -23,6 +23,7 @@ _TIPOS_PERGUNTA = [
     ("RECUPERACAO", r"recuperac|\bfalenc|\brj\b|reestrutura"),
     ("CANCELAMENTO", r"cancelamento|deslist|cancelou"),
     ("EMISSAO", r"emiss(?:ao|oes)|emitiu|emitiram|oferta (?:publica )?de cotas|subscric|follow ?on|novas cotas|aumento de capital|direito de preferencia|bonificac|\bsobras?\b"),
+    ("RESGATE", r"resgat|conversao de acoes|convers(?:ao|oes) (?:das|dos|de)"),
     ("DESDOBRAMENTO", r"desdobr|grupament|\bsplit\b|\binplit\b"),
     ("LIQUIDACAO", r"liquidac"),
 ]
