@@ -297,7 +297,7 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
             "eventos": [
                 {
                     **{k: e[k] for k in ("empresa", "data", "assunto", "tipo_evento_rotulo", "categoria", "tipo", "tipo_ativo")},
-                    **({"resumo_do_documento": e["resumo"][:1800]} if e.get("resumo") else {}),
+                    **({"resumo_do_documento": e["resumo"][:3200]} if e.get("resumo") else {}),
                 }
                 for e in mostrados
             ],

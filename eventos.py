@@ -214,6 +214,12 @@ def _linha_para_evento(r: sqlite3.Row, quando: datetime | None, tipo_evento: str
     }
 
 
+def _nome_base(empresa: str | None) -> str:
+    """Nome da empresa sem sufixos societários: 'AXIA ENERGIA S.A.' e 'AXIA ENERGIA' viram a mesma chave."""
+    t = termo(empresa)
+    return re.sub(r"(?: (?:s a|sa|ltda|cia|companhia))+$", "", t).strip()
+
+
 def buscar(con: sqlite3.Connection, filtro: Filtro) -> list[dict]:
     """Eventos que atendem ao filtro, do mais recente ao mais antigo, sem duplicatas.
 
@@ -239,7 +245,7 @@ def buscar(con: sqlite3.Connection, filtro: Filtro) -> list[dict]:
             alvo = f" {termo(r['empresa'])} {termo(r['assunto'])} "
             if not any(f" {t} " in alvo for t in filtro.termos_empresa):
                 continue
-        chave = (normalizar(r["empresa"]), normalizar(r["assunto"]), quando.date())
+        chave = (_nome_base(r["empresa"]), termo(r["assunto"]), quando.date())
         if chave in vistos:
             continue
         vistos.add(chave)

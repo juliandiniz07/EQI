@@ -78,3 +78,21 @@ def test_filtra_por_empresa(banco, monkeypatch):
     res = ResumidorFalso()
     resumos.processar_pendentes(res, dias=400, limite=50, empresa="gerdau", client=object(), baixar_fn=lambda cl, l: ("pdf", b"%PDF-x"))
     assert {e for e, _ in res.vistos} == {"GERDAU S.A."}
+
+
+def test_refazer_substitui_e_preserva_em_caso_de_falha(banco, monkeypatch):
+    hoje(monkeypatch)
+    pdf = lambda cl, l: ("pdf", b"%PDF-x")
+    resumos.processar_pendentes(ResumidorFalso("versão antiga"), dias=400, limite=50, client=object(), baixar_fn=pdf)
+    resumos.processar_pendentes(ResumidorFalso("versão nova"), dias=400, limite=50, client=object(), baixar_fn=pdf, refazer=True)
+    with eventos.conectar() as con:
+        assert con.execute("SELECT COUNT(*) FROM fatos WHERE resumo='versão antiga'").fetchone()[0] == 0
+        assert con.execute("SELECT COUNT(*) FROM fatos WHERE resumo='versão nova'").fetchone()[0] > 0
+
+    def quebra(cl, l):
+        raise RuntimeError("fora do ar")
+
+    c = resumos.processar_pendentes(ResumidorFalso("outra"), dias=400, limite=50, client=object(), baixar_fn=quebra, refazer=True)
+    assert c["ok"] == 0
+    with eventos.conectar() as con:
+        assert con.execute("SELECT COUNT(*) FROM fatos WHERE resumo='versão nova'").fetchone()[0] > 0

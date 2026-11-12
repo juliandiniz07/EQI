@@ -7,6 +7,7 @@ Uso manual (recupera eventos já coletados):
   python resumos.py              # últimos 60 dias, até 40 documentos
   python resumos.py --dias 120 --limite 100
   python resumos.py --empresa inter --dias 400   # só eventos de uma empresa, em qualquer época
+  python resumos.py --empresa axia --dias 400 --refazer   # lê de novo e substitui os resumos já feitos
 """
 
 import argparse
@@ -35,12 +36,24 @@ HEADERS = {
 }
 
 PROMPT = """\
-Você lê comunicados oficiais de empresas listadas (CVM/B3) para assessores de investimento.
-Escreva um resumo em português do Brasil, objetivo, de no máximo 200 palavras, usando SOMENTE o documento.
-Inclua, quando constarem: o que foi decidido ou anunciado; as opções ou alternativas do investidor (liste cada uma); \
-datas e prazos (com horário, se houver); fatores, preços, proporções e valores; como participar ou a quem procurar; \
-condições relevantes. Se um item não constar, não o mencione. Nunca invente, não opine e não recomende compra ou venda. \
-Se o documento não trouxer informação útil, responda exatamente: SEM_CONTEUDO."""
+Você lê comunicados oficiais de empresas listadas (CVM/B3) para assessores de investimento que precisam \
+orientar clientes. Escreva em português do Brasil, SOMENTE com o que está no documento, neste formato exato \
+(omita a seção inteira quando o documento não trouxer a informação):
+
+**O que é:** uma ou duas frases.
+**Opções do investidor:**
+- cada alternativa em uma linha, com as condições (fator, razão, preço, tratamento tributário, se constarem)
+**O que o cliente precisa fazer:**
+- como e onde manifestar a opção (corretora, custodiante, canal indicado), documentos ou autorizações exigidos
+- o que acontece se o cliente NÃO fizer nada (opção padrão ou consequência)
+**Prazos e datas:**
+- período de manifestação (início e fim, com horário), data-base, data de crédito, pagamento ou negociação
+**Valores e números:** fatores, preços, quantidades, percentuais.
+**Atenção:** restrições, riscos ou impactos tributários citados no documento.
+
+Regras: seja completo e concreto (até cerca de 350 palavras); copie datas, horários, tickers e valores exatamente como \
+estão no documento; nunca invente nem complete com conhecimento externo; sem opinião e sem recomendação de compra ou venda. \
+Se o documento for apenas administrativo e não trouxer nenhuma informação útil, responda exatamente: SEM_CONTEUDO."""
 
 
 def baixar(client: httpx.Client, link: str) -> tuple[str, bytes | str] | None:
@@ -78,7 +91,7 @@ class ResumidorGemini:
 
         parte = types.Part.from_bytes(data=conteudo, mime_type="application/pdf") if tipo == "pdf" else types.Part.from_text(text=conteudo)
         cabecalho = types.Part.from_text(text=f"Empresa: {empresa}\nAssunto: {assunto}")
-        config = types.GenerateContentConfig(system_instruction=PROMPT, temperature=0.1, max_output_tokens=900)
+        config = types.GenerateContentConfig(system_instruction=PROMPT, temperature=0.1, max_output_tokens=1800)
         for modelo in self._modelos:
             for tentativa in (1, 2):
                 self._ritmo()
@@ -103,17 +116,20 @@ class ResumidorGemini:
         return None
 
 
-def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, empresa: str | None = None, client: httpx.Client | None = None, baixar_fn=baixar) -> dict:
+def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, empresa: str | None = None, refazer: bool = False, client: httpx.Client | None = None, baixar_fn=baixar) -> dict:
     """Resume os eventos recentes que ainda não têm resumo. Nunca levanta exceção para o chamador."""
     contagem = {"ok": 0, "sem_conteudo": 0, "erro": 0}
     corte = date.today() - timedelta(days=dias)
     client = client or httpx.Client(headers=HEADERS, timeout=45, follow_redirects=True)
     with eventos.conectar() as con:
         candidatos = []
+        filtro_sql = (
+            "link LIKE 'http%'" if refazer else
+            "resumo IS NULL AND link LIKE 'http%' AND COALESCE(resumo_status,'') != 'sem_conteudo' AND COALESCE(resumo_tentativas,0) < ?"
+        )
         for r in con.execute(
-            "SELECT protocolo, empresa, assunto, link, data_entrega FROM fatos "
-            "WHERE resumo IS NULL AND link LIKE 'http%' AND COALESCE(resumo_status,'') != 'sem_conteudo' "
-            "AND COALESCE(resumo_tentativas,0) < ?", (MAX_TENTATIVAS,)
+            f"SELECT protocolo, empresa, assunto, link, data_entrega FROM fatos WHERE {filtro_sql}",
+            () if refazer else (MAX_TENTATIVAS,),
         ):
             q = eventos.parse_data(r["data_entrega"])
             if not q or q.date() < corte:
@@ -136,8 +152,10 @@ def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, empresa: st
             except Exception as e:
                 log.warning("Resumo: falha em %s (%s): %s", r["empresa"], r["protocolo"], e)
             contagem["ok" if status == "ok" else "sem_conteudo" if status == "sem_conteudo" else "erro"] += 1
+            if refazer and status == "erro":
+                continue  # não apaga o resumo antigo se a nova leitura falhou
             con.execute(
-                "UPDATE fatos SET resumo=?, resumo_status=?, resumo_tentativas=COALESCE(resumo_tentativas,0)+1 WHERE protocolo=?",
+                "UPDATE fatos SET resumo=COALESCE(?, resumo), resumo_status=?, resumo_tentativas=COALESCE(resumo_tentativas,0)+1 WHERE protocolo=?",
                 (resumo, status, r["protocolo"]),
             )
             con.commit()
@@ -153,13 +171,13 @@ def resumidor_do_ambiente() -> ResumidorGemini | None:
     return ResumidorGemini(chave, modelos)
 
 
-def executar(dias: int = 60, limite: int = 40, empresa: str | None = None) -> dict | None:
+def executar(dias: int = 60, limite: int = 40, empresa: str | None = None, refazer: bool = False) -> dict | None:
     try:
         resumidor = resumidor_do_ambiente()
         if resumidor is None:
             log.warning("GEMINI_API_KEY não definida: documentos não serão lidos.")
             return None
-        return processar_pendentes(resumidor, dias=dias, limite=limite, empresa=empresa)
+        return processar_pendentes(resumidor, dias=dias, limite=limite, empresa=empresa, refazer=refazer)
     except Exception:
         log.exception("Erro na leitura de documentos")
         return None
@@ -171,6 +189,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--dias", type=int, default=60)
     p.add_argument("--limite", type=int, default=40)
+    p.add_argument("--refazer", action="store_true", help="lê de novo e substitui os resumos já existentes")
     p.add_argument("--empresa", help="só eventos dessa empresa (ex.: inter, brava)")
     a = p.parse_args()
-    executar(a.dias, a.limite, a.empresa)
+    executar(a.dias, a.limite, a.empresa, a.refazer)

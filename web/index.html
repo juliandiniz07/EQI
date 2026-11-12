@@ -128,24 +128,30 @@
   }
   .sugestao:hover { border-color: var(--green); color: var(--green); }
 
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .cards { display: flex; flex-direction: column; gap: 4px; }
   .card {
-    background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px;
-    display: flex; flex-direction: column; gap: 5px; cursor: pointer; transition: border-color .15s, background .15s;
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; column-gap: 10px; cursor: pointer;
+    transition: border-color .15s, background .15s;
   }
   .card:hover, .card:focus-visible { border-color: rgba(0,200,150,.55); outline: none; }
-  .card.aberto { grid-column: 1 / -1; cursor: default; border-color: rgba(0,200,150,.55); background: color-mix(in srgb, var(--bg-2) 92%, var(--green) 8%); }
-  .card .topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .card .chevron { color: var(--muted); font-size: 11px; transition: transform .15s; flex-shrink: 0; }
+  .card.aberto { cursor: default; border-color: rgba(0,200,150,.55); background: color-mix(in srgb, var(--bg-2) 92%, var(--green) 8%); }
+  .card.oculto { display: none; }
+  .card .texto { min-width: 0; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card.aberto .texto { white-space: normal; }
+  .card .chevron { color: var(--muted); font-size: 10px; transition: transform .15s; }
   .card.aberto .chevron { transform: rotate(180deg); }
-  .detalhe { display: none; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 9px; font-size: 13.5px; line-height: 1.55; color: #dbe2f0; }
+  .detalhe { display: none; grid-column: 1 / -1; border-top: 1px solid var(--border); margin-top: 6px; padding-top: 9px; font-size: 13.5px; line-height: 1.55; color: #dbe2f0; }
   .card.aberto .detalhe { display: block; }
-  .detalhe h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--green); margin-bottom: 6px; }
-  .detalhe p { margin: 0 0 8px; }
-  .detalhe ul { margin: 0 0 8px; padding-left: 18px; }
+  .detalhe p { margin: 0 0 6px; }
+  .detalhe p:has(> strong:only-child) { margin-top: 10px; margin-bottom: 3px; }
+  .detalhe strong { color: var(--green); font-weight: 600; }
+  .detalhe ul { margin: 0 0 6px; padding-left: 18px; }
   .detalhe li { margin-bottom: 3px; }
   .detalhe .sem-resumo { color: var(--muted); }
   .detalhe .acoes { margin-top: 8px; }
+  .ver-todos { align-self: flex-start; background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  .ver-todos:hover { color: var(--green); border-color: var(--green); }
   .badges { display: flex; flex-wrap: wrap; gap: 6px; }
   .badge {
     --c: var(--c-evento);
@@ -161,11 +167,9 @@
   .badge[data-tipo="DESDOBRAMENTO"] { --c: var(--c-desdobramento); }
   .badge[data-tipo="LIQUIDACAO"] { --c: var(--c-liquidacao); }
   .badge[data-tipo="FII"] { --c: var(--c-fii); }
-  .card .empresa { font-weight: 600; font-size: 13.5px; line-height: 1.25; }
-  .card .assunto { color: #c5cde0; font-size: 12.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .card .rodape { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 4px; }
-  .card .data { color: var(--muted); font-size: 11.5px; }
-  .card.aberto .assunto { -webkit-line-clamp: unset; }
+  .card .empresa { font-weight: 600; margin-right: 6px; }
+  .card .assunto { color: #c5cde0; }
+  .card .data { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
   .btn-pdf {
     font-size: 12.5px; font-weight: 600; color: var(--green); text-decoration: none;
     border: 1px solid rgba(0,200,150,.4); padding: 5px 10px; border-radius: 8px; white-space: nowrap;
@@ -204,7 +208,6 @@
     #mensagens { padding: 16px 12px 8px; }
     .avatar { width: 30px; height: 30px; }
     .corpo { max-width: calc(100% - 42px); }
-    .cards { grid-template-columns: 1fr 1fr; }
     .dica { display: none; }
   }
 </style>
@@ -390,18 +393,19 @@ function elCard(ev) {
   card.tabIndex = 0;
   card.setAttribute("role", "button");
   card.setAttribute("aria-expanded", "false");
-  const badges = `<span class="badge" data-tipo="${escapar(ev.tipo_evento || "")}">${escapar(ev.tipo_evento_rotulo || "Evento")}</span>` +
-    (ev.tipo_ativo === "FII" ? `<span class="badge" data-tipo="FII">${ROTULO_FII}</span>` : "");
+  const badges = `<span class="badge" data-tipo="${escapar(ev.tipo_evento || "")}">${escapar(ev.tipo_evento_rotulo || "Evento")}</span>`;
   const link = linkSeguro(ev.link);
   const botaoPdf = link ? `<a class="btn-pdf" href="${escapar(link)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : "";
   const detalhe = ev.resumo
-    ? `<h4>Resumo do documento</h4>${formatarResumo(ev.resumo)}`
+    ? formatarResumo(ev.resumo)
     : `<p class="sem-resumo">O resumo deste documento ainda não está disponível. Abra o PDF para ver os detalhes.</p>`;
+  const empresa = String(ev.empresa || "").replace(/\s+S\.?\/?A\.?$/i, "");
+  const assunto = ev.assunto || ev.tipo || ev.categoria || "";
   card.innerHTML = `
-    <div class="topo"><div class="badges">${badges}</div><span class="chevron" aria-hidden="true">▼</span></div>
-    <div class="empresa">${escapar(ev.empresa)}</div>
-    <div class="assunto">${escapar(ev.assunto)}</div>
-    <div class="rodape"><span class="data">${escapar(ev.data)}</span></div>
+    ${badges}
+    <div class="texto"><span class="empresa">${escapar(empresa)}</span><span class="assunto">${escapar(assunto)}</span></div>
+    <span class="data">${escapar((ev.data || "").slice(0, 5) + "/" + (ev.data || "").slice(8))}</span>
+    <span class="chevron" aria-hidden="true">▼</span>
     <div class="detalhe">${detalhe}<div class="acoes">${botaoPdf}</div></div>`;
   const alternar = () => {
     const aberto = card.classList.toggle("aberto");
@@ -425,7 +429,23 @@ function renderizarMensagem(m) {
   if (m.eventos && m.eventos.length) {
     const cards = document.createElement("div");
     cards.className = "cards";
-    m.eventos.forEach((ev) => cards.appendChild(elCard(ev)));
+    const VISIVEIS = 4;
+    m.eventos.forEach((ev, i) => {
+      const c = elCard(ev);
+      if (i >= VISIVEIS) c.classList.add("oculto");
+      cards.appendChild(c);
+    });
+    if (m.eventos.length > VISIVEIS) {
+      const btn = document.createElement("button");
+      btn.type = "button"; btn.className = "ver-todos";
+      btn.textContent = `Mostrar todos (${m.eventos.length})`;
+      btn.addEventListener("click", () => {
+        const ocultos = cards.querySelectorAll(".card.oculto").length > 0;
+        cards.querySelectorAll(".card").forEach((c, i) => c.classList.toggle("oculto", !ocultos && i >= VISIVEIS));
+        btn.textContent = ocultos ? "Mostrar menos" : `Mostrar todos (${m.eventos.length})`;
+      });
+      cards.appendChild(btn);
+    }
     corpo.appendChild(cards);
     const total = m.meta?.total || 0;
     if (total > m.eventos.length) {
@@ -436,6 +456,7 @@ function renderizarMensagem(m) {
     }
   }
   $("trilho").appendChild(msg);
+  return msg;
 }
 
 function renderizarBoasVindas() {
@@ -467,6 +488,11 @@ function renderizarTudo() {
   rolar();
 }
 
+function rolarPara(el) {
+  // Mostra o começo da resposta (e não o fim dos cartões), para o assessor ler de cima para baixo.
+  requestAnimationFrame(() => el.scrollIntoView({ block: "start", behavior: "smooth" }));
+}
+
 function rolar() {
   const area = $("mensagens");
   requestAnimationFrame(() => (area.scrollTop = area.scrollHeight));
@@ -486,6 +512,7 @@ async function enviar(texto) {
   if (!pergunta || enviando) return;
   if (!sessaoValida()) return mostrarLogin("Sua sessão expirou. Entre novamente.");
 
+  let alvo = null;
   enviando = true;
   $("btn-enviar").disabled = true;
   $("pergunta").value = ""; ajustarAltura();
@@ -512,7 +539,7 @@ async function enviar(texto) {
     const resposta = { role: "assistant", content: dados.resposta, eventos: dados.eventos || [], meta: dados.meta || {} };
     conversa.push(resposta);
     $("digitando")?.remove();
-    renderizarMensagem(resposta);
+    alvo = renderizarMensagem(resposta);
   } catch (err) {
     $("digitando")?.remove();
     const msg = err.message === "Failed to fetch" ? "Sem conexão com o servidor. Verifique sua internet e tente de novo." : err.message;
@@ -523,7 +550,7 @@ async function enviar(texto) {
     store.set("eqi_conversa", conversa.slice(-60));
     enviando = false;
     $("btn-enviar").disabled = false;
-    rolar();
+    alvo ? rolarPara(alvo) : rolar();
     $("pergunta").focus();
   }
 }

@@ -91,3 +91,15 @@ def test_resgate_e_conversao_da_axia(interp):
     assert eventos.eh_relevante(titulo) and eventos.classificar(titulo) == "RESGATE"
     r = i(interp, "resgate ou conversão de axia?")
     assert r.empresa and "RESGATE" in r.tipos
+
+
+def test_nao_repete_evento_da_mesma_empresa_com_nome_diferente(banco):
+    with eventos.conectar() as con:
+        eventos.inserir(con, [
+            {"protocolo": f"d{n}", "empresa": nome, "categoria": "Fato Relevante", "tipo": None,
+             "assunto": "6ª operação - Resultado da conversão e do resgate das ações PNCs", "data_entrega": "2026-07-22 10:00",
+             "link": "https://x", "tipo_ativo": "ACAO"}
+            for n, nome in enumerate(["AXIA ENERGIA", "AXIA ENERGIA S.A."])
+        ])
+        achados = eventos.buscar(con, eventos.Filtro(HOJE.replace(day=20), HOJE, ["axia"]))
+    assert len(achados) == 1
