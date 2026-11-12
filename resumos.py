@@ -60,15 +60,17 @@ def baixar(client: httpx.Client, link: str) -> tuple[str, bytes | str] | None:
     """('pdf', bytes) | ('texto', str) | None se não foi possível obter."""
     r = client.get(link)
     r.raise_for_status()
-    if len(r.content) > MAX_BYTES:
+    corpo, tipo = r.content, r.headers.get("content-type", "")
+    if len(corpo) > MAX_BYTES:
+        log.warning("Documento grande demais (%d bytes): %s", len(corpo), link)
         return None
-    if r.content[:5] == b"%PDF-":
-        return "pdf", r.content
-    tipo = r.headers.get("content-type", "")
-    if "html" in tipo or r.content[:1] == b"<":
-        texto = BeautifulSoup(r.text, "html.parser").get_text(" ", strip=True)
-        texto = re.sub(r"\s+", " ", texto)
-        return ("texto", texto[:60000]) if len(texto) > 200 else None
+    if b"%PDF-" in corpo[:1024]:  # alguns PDFs vêm com bytes antes do cabeçalho
+        return "pdf", corpo[corpo.index(b"%PDF-"):]
+    if "html" in tipo or "text" in tipo or corpo[:1] == b"<":
+        texto = re.sub(r"\s+", " ", BeautifulSoup(r.text, "html.parser").get_text(" ", strip=True))
+        if len(texto) > 200:
+            return "texto", texto[:60000]
+    log.warning("Documento sem conteúdo aproveitável (tipo=%s, %d bytes, início=%r) em %s", tipo, len(corpo), corpo[:120], link)
     return None
 
 
