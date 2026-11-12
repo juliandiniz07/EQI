@@ -22,6 +22,7 @@ from datetime import date, timedelta
 import httpx
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 
+import atendimento
 import eventos
 from consulta import Interpretador
 
@@ -213,31 +214,14 @@ class RoboDeGrupos:
         historico = [{"role": "user", "content": c} for c in contexto]
         with eventos.conectar() as con:
             it = self.interp.interpretar(texto, historico, hoje=self.hoje(), nomes_no_banco=eventos.empresas_conhecidas(con))
-            achados = eventos.buscar(con, it.filtro())
-            ampliado = False
-            if not achados and (it.termos_empresa or it.tipos) and it.dias < DIAS_AMPLIACAO:
-                f = it.filtro()
-                f.desde = it.ate - timedelta(days=DIAS_AMPLIACAO - 1)
-                achados = eventos.buscar(con, f)
-                ampliado = bool(achados)
-            tipo_relaxado = False
-            if not achados and it.tipos and it.termos_empresa:
-                f = it.filtro()
-                f.tipos = []
-                f.desde = it.ate - timedelta(days=DIAS_AMPLIACAO - 1)
-                achados = eventos.buscar(con, f)
-                tipo_relaxado = bool(achados)
-        mostrados = achados[:MAX_EVENTOS_GRUPO]
+            res = atendimento.buscar_para_pergunta(con, it)
+        achados, ampliado = res.eventos, res.ampliado
+        mostrados, extra = atendimento.contexto_eventos(res, it, MAX_EVENTOS_GRUPO, 1500, ("empresa", "data", "assunto", "tipo_evento_rotulo", "tipo_ativo"))
         dados = {
             "canal": "grupo de WhatsApp: responda em até ~80 palavras, sem markdown, no máximo 2 parágrafos",
             "hoje": self.hoje().strftime("%d/%m/%Y"),
-            "total_encontrado": len(achados), "mostrando": len(mostrados), "periodo_ampliado": ampliado, "tipo_relaxado": tipo_relaxado,
-            "instrucao_extra": "Use 'resumo_do_documento', quando existir, para detalhar opções, prazos e valores.",
-            "eventos": [
-                {**{k: e[k] for k in ("empresa", "data", "assunto", "tipo_evento_rotulo", "tipo_ativo")},
-                 **({"resumo_do_documento": e["resumo"][:1200]} if e.get("resumo") else {})}
-                for e in mostrados
-            ],
+            "total_encontrado": len(achados), "mostrando": len(mostrados), "periodo_ampliado": ampliado,
+            **extra,
         }
         if it.ticker:
             dados["ticker_da_empresa"] = it.ticker

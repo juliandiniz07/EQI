@@ -25,6 +25,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
+import atendimento
 import eventos
 import grupos
 from consulta import Interpretacao, Interpretador
@@ -273,44 +274,20 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
         historico = [m.model_dump() for m in dados.historico]
         with eventos.conectar() as con:
             interp = interpretador.interpretar(dados.pergunta, historico, hoje=hoje(), nomes_no_banco=eventos.empresas_conhecidas(con))
-            encontrados = eventos.buscar(con, interp.filtro())
-            ampliado = False
-            if not encontrados and (interp.termos_empresa or interp.tipos) and interp.dias < DIAS_AMPLIACAO:
-                filtro = interp.filtro()
-                filtro.desde = interp.ate - timedelta(days=DIAS_AMPLIACAO - 1)
-                encontrados = eventos.buscar(con, filtro)
-                ampliado = bool(encontrados)
-            tipo_relaxado = False
-            if not encontrados and interp.tipos and interp.termos_empresa:
-                filtro = interp.filtro()
-                filtro.tipos = []  # a empresa existe, mas nenhum evento do tipo pedido: mostra os outros eventos dela
-                filtro.desde = interp.ate - timedelta(days=DIAS_AMPLIACAO - 1)
-                encontrados = eventos.buscar(con, filtro)
-                tipo_relaxado = bool(encontrados)
+            res = atendimento.buscar_para_pergunta(con, interp)
 
-        mostrados = encontrados[:MAX_EVENTOS_RESPOSTA]
-        meta = {**interp.meta(), "total": len(encontrados), "periodo_ampliado": ampliado, "tipo_relaxado": tipo_relaxado}
+        encontrados, ampliado = res.eventos, res.ampliado
+        mostrados, extra = atendimento.contexto_eventos(
+            res, interp, MAX_EVENTOS_RESPOSTA, 3200, ("empresa", "data", "assunto", "tipo_evento_rotulo", "categoria", "tipo", "tipo_ativo")
+        )
+        meta = {**interp.meta(), "total": len(encontrados), "periodo_ampliado": ampliado, "tipo_relaxado": res.tipo_relaxado}
         contexto = {
             "hoje": hoje().strftime("%d/%m/%Y"),
             "filtros_entendidos": meta,
             "total_encontrado": len(encontrados),
             "mostrando": len(mostrados),
             "periodo_ampliado": ampliado,
-            "tipo_relaxado": tipo_relaxado,
-            "instrucao_extra": (
-                "Cada evento pode trazer 'resumo_do_documento', extraído do comunicado oficial. Quando existir, use-o para "
-                "responder com os detalhes (opções do investidor, prazos, valores, fatores) em vez de só citar o título. "
-                "Se o resumo não trouxer o que foi perguntado, diga isso com clareza. "
-                "Se 'tipo_relaxado' for verdadeiro, não existe evento do tipo pedido para essa empresa: diga isso e apresente "
-                "os demais eventos dela, indicando se algum se relaciona com a pergunta."
-            ),
-            "eventos": [
-                {
-                    **{k: e[k] for k in ("empresa", "data", "assunto", "tipo_evento_rotulo", "categoria", "tipo", "tipo_ativo")},
-                    **({"resumo_do_documento": e["resumo"][:3200]} if e.get("resumo") else {}),
-                }
-                for e in mostrados
-            ],
+            **extra,
         }
         if interp.ticker:
             contexto["ticker_da_empresa"] = interp.ticker

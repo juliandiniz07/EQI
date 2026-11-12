@@ -133,8 +133,25 @@ def classificar(assunto: str | None, tipo: str | None = None) -> str | None:
     return None
 
 
-def eh_relevante(assunto: str | None, tipo: str | None = None) -> bool:
+# Categorias que sempre entram no banco, qualquer que seja o título: o filtro por palavra-chave não decide mais o que guardar.
+CATEGORIAS_ARMAZENADAS = ("fato relevante", "comunicado ao mercado", "aviso aos acionistas")
+
+
+def eh_relevante(assunto: str | None, tipo: str | None = None, categoria: str | None = None) -> bool:
+    if normalizar(categoria).startswith(CATEGORIAS_ARMAZENADAS):
+        return True
     return classificar(assunto, tipo) is not None
+
+
+def deve_resumir(assunto: str | None, tipo: str | None = None, categoria: str | None = None) -> bool:
+    """Lê o documento só de Fato Relevante ou de evento de tipo conhecido (poupa a cota da IA)."""
+    return normalizar(categoria).startswith("fato relevante") or classificar(assunto, tipo) is not None
+
+
+def priorizar(lista: list[dict], tipos: list[str]) -> tuple[list[dict], int]:
+    """Coloca primeiro os eventos dos tipos pedidos, mantendo a ordem por data. Devolve também quantos são do tipo."""
+    do_tipo = [e for e in lista if e["tipo_evento"] in tipos]
+    return do_tipo + [e for e in lista if e["tipo_evento"] not in tipos], len(do_tipo)
 
 
 # ---------------------------------------------------------------------------
@@ -219,7 +236,7 @@ def _linha_para_evento(r: sqlite3.Row, quando: datetime | None, tipo_evento: str
         "link": link if link.startswith(("http://", "https://")) else None,
         "tipo_ativo": r["tipo_ativo"],
         "tipo_evento": tipo_evento,
-        "tipo_evento_rotulo": ROTULOS.get(tipo_evento or "", "Evento"),
+        "tipo_evento_rotulo": ROTULOS.get(tipo_evento or "") or (r["categoria"] or "Evento"),
         "resumo": r["resumo"],
     }
 
@@ -251,6 +268,8 @@ def buscar(con: sqlite3.Connection, filtro: Filtro) -> list[dict]:
         tipo_evento = classificar(r["assunto"], r["tipo"])
         if filtro.tipos and tipo_evento not in filtro.tipos:
             continue
+        if not filtro.tipos and not filtro.termos_empresa and tipo_evento is None:
+            continue  # pergunta geral ("teve algo essa semana?"): só tipos conhecidos, senão vira ruído
         if filtro.termos_empresa:
             alvo = f" {termo(r['empresa'])} {termo(r['assunto'])} "
             if not any(f" {t} " in alvo for t in filtro.termos_empresa):

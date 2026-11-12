@@ -55,7 +55,7 @@ def test_parse_pagina_desconhecida_explica_o_erro():
     assert fatos == [] and "empresa e assunto" in diag["erro"]
 
 
-def test_coleta_grava_so_relevantes_sem_duplicar(tmp_path, monkeypatch):
+def test_coleta_grava_todo_fato_relevante_sem_duplicar(tmp_path, monkeypatch):
     monkeypatch.setenv("DB_PATH", str(tmp_path / "fatos.db"))
 
     def handler(req):
@@ -65,10 +65,11 @@ def test_coleta_grava_so_relevantes_sem_duplicar(tmp_path, monkeypatch):
 
     cliente = httpx.Client(transport=httpx.MockTransport(handler))
     monkeypatch.setattr(fetch_events, "_cliente", lambda: cliente)
-    assert fetch_events.executar_fundamentus() == 3  # Brava (OPA), Light (RJ), MXRF11 (emissão)
+    # Brava (OPA), Light (RJ), MXRF11 (emissão) e Alguma (Fato Relevante sem tipo conhecido: também entra)
+    assert fetch_events.executar_fundamentus() == 4
     assert fetch_events.executar_fundamentus() == 0
     with eventos.conectar() as con:
-        assert con.execute("SELECT COUNT(*) FROM fatos").fetchone()[0] == 3
+        assert con.execute("SELECT COUNT(*) FROM fatos").fetchone()[0] == 4
         assert con.execute("SELECT inseridos FROM coletas ORDER BY id").fetchall()[-1][0] == 0
 
 

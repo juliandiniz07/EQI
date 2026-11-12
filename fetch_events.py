@@ -206,7 +206,7 @@ def coletar_cvm(ano: int, client: httpx.Client | None = None) -> list[dict]:
 # ---------------------------------------------------------------------------
 
 def _gravar(fonte: str, inicio: datetime, fatos: list[dict], enviado: int, erro: str | None = None) -> int:
-    relevantes = [f for f in fatos if eventos.eh_relevante(f["assunto"], f.get("tipo"))]
+    relevantes = [f for f in fatos if eventos.eh_relevante(f["assunto"], f.get("tipo"), f.get("categoria"))]
     with eventos.conectar() as con:
         inseridos = eventos.inserir(con, relevantes, enviado=enviado)
         eventos.registrar_coleta(con, fonte, inicio, len(fatos), len(relevantes), inseridos, erro)

@@ -133,3 +133,20 @@ def test_sem_o_tipo_pedido_mostra_outros_eventos_da_empresa(cliente):
     assert corpo["eventos"] and corpo["eventos"][0]["empresa"] == "GERDAU S.A."
     _, _, dados = cliente.redator.chamadas[-1]
     assert dados["tipo_relaxado"] is True
+
+
+def test_fato_relevante_de_titulo_desconhecido_aparece_por_empresa_mas_nao_na_pergunta_geral(cliente):
+    import eventos
+    from tests.conftest import HOJE
+    with eventos.conectar() as con:
+        eventos.inserir(con, [{"protocolo": "z1", "empresa": "RAIZEN S.A.", "categoria": "Fato Relevante", "tipo": None,
+                               "assunto": "Aprovação de capitalização por investidores estratégicos", "data_entrega": "2026-07-20 10:00",
+                               "link": "https://x", "tipo_ativo": "ACAO"}])
+    h = entrar(cliente)
+    por_empresa = cliente.post("/consultar", json={"pergunta": "subscrição da Raízen"}, headers=h).json()
+    assert por_empresa["eventos"] and "capitalização" in por_empresa["eventos"][0]["assunto"]
+    assert por_empresa["meta"]["tipo_relaxado"] is True
+    geral = cliente.post("/consultar", json={"pergunta": "o que teve de novo esse mês?"}, headers=h).json()
+    assert all("Raízen" not in e["empresa"] and "RAIZEN" not in e["empresa"] for e in geral["eventos"])
+    _, _, dados = cliente.redator.chamadas[0]
+    assert "instrucao_extra" in dados

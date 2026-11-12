@@ -130,11 +130,11 @@ def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, empresa: st
             "resumo IS NULL AND link LIKE 'http%' AND COALESCE(resumo_status,'') != 'sem_conteudo' AND COALESCE(resumo_tentativas,0) < ?"
         )
         for r in con.execute(
-            f"SELECT protocolo, empresa, assunto, link, data_entrega FROM fatos WHERE {filtro_sql}",
+            f"SELECT protocolo, empresa, assunto, tipo, categoria, link, data_entrega FROM fatos WHERE {filtro_sql}",
             () if refazer else (MAX_TENTATIVAS,),
         ):
             q = eventos.parse_data(r["data_entrega"])
-            if not q or q.date() < corte:
+            if not q or q.date() < corte or not eventos.deve_resumir(r["assunto"], r["tipo"], r["categoria"]):
                 continue
             if empresa and f" {eventos.termo(empresa)} " not in f" {eventos.termo(r['empresa'])} {eventos.termo(r['assunto'])} ":
                 continue
