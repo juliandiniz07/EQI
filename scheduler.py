@@ -16,8 +16,15 @@ from dotenv import load_dotenv
 
 import eventos
 import fetch_events
+import resumos
 
 log = logging.getLogger("agendador")
+
+
+def coleta_fundamentus():
+    """Coleta e, em seguida, lê os documentos dos eventos novos (resumo guardado no banco)."""
+    fetch_events.executar_fundamentus()
+    resumos.executar(dias=30, limite=15)
 
 
 def main():
@@ -27,19 +34,20 @@ def main():
 
     log.info("Banco: %s | fuso da agenda: %s", eventos.db_path(), fuso)
     log.info("Coleta inicial...")
-    fetch_events.executar_fundamentus()
+    coleta_fundamentus()
     fetch_events.executar_cvm()
+    resumos.executar(dias=60, limite=40)
 
     agenda = BlockingScheduler(timezone=fuso)
     opcoes = {"max_instances": 1, "coalesce": True, "misfire_grace_time": 600}
     agenda.add_job(
-        fetch_events.executar_fundamentus,
+        coleta_fundamentus,
         CronTrigger(day_of_week="mon-fri", hour="7-21", minute="0,30", timezone=fuso),
         id="fundamentus",
         **opcoes,
     )
     agenda.add_job(
-        fetch_events.executar_fundamentus,
+        coleta_fundamentus,
         CronTrigger(day_of_week="mon-fri", hour=22, minute=0, timezone=fuso),
         id="fundamentus-22h",
         **opcoes,

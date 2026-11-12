@@ -38,12 +38,24 @@ def db_path() -> str:
     return os.getenv("DB_PATH", "fatos.db")
 
 
+COLUNAS_NOVAS = {"resumo": "TEXT", "resumo_status": "TEXT", "resumo_tentativas": "INTEGER DEFAULT 0"}
+
+
+def _migrar(con: sqlite3.Connection) -> None:
+    """Acrescenta colunas novas em bancos criados por versões anteriores."""
+    existentes = {r[1] for r in con.execute("PRAGMA table_info(fatos)")}
+    for nome, tipo in COLUNAS_NOVAS.items():
+        if nome not in existentes:
+            con.execute(f"ALTER TABLE fatos ADD COLUMN {nome} {tipo}")
+
+
 @contextmanager
 def conectar(caminho: str | None = None):
     con = sqlite3.connect(caminho or db_path(), timeout=30)
     con.row_factory = sqlite3.Row
     try:
         con.executescript(SCHEMA)
+        _migrar(con)
         yield con
         con.commit()
     finally:
@@ -193,6 +205,7 @@ def _linha_para_evento(r: sqlite3.Row, quando: datetime | None, tipo_evento: str
         "tipo_ativo": r["tipo_ativo"],
         "tipo_evento": tipo_evento,
         "tipo_evento_rotulo": ROTULOS.get(tipo_evento or "", "Evento"),
+        "resumo": r["resumo"],
     }
 
 

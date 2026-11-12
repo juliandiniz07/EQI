@@ -225,7 +225,12 @@ class RoboDeGrupos:
             "canal": "grupo de WhatsApp: responda em até ~80 palavras, sem markdown, no máximo 2 parágrafos",
             "hoje": self.hoje().strftime("%d/%m/%Y"),
             "total_encontrado": len(achados), "mostrando": len(mostrados), "periodo_ampliado": ampliado,
-            "eventos": [{k: e[k] for k in ("empresa", "data", "assunto", "tipo_evento_rotulo", "tipo_ativo")} for e in mostrados],
+            "instrucao_extra": "Use 'resumo_do_documento', quando existir, para detalhar opções, prazos e valores.",
+            "eventos": [
+                {**{k: e[k] for k in ("empresa", "data", "assunto", "tipo_evento_rotulo", "tipo_ativo")},
+                 **({"resumo_do_documento": e["resumo"][:1200]} if e.get("resumo") else {})}
+                for e in mostrados
+            ],
         }
         if it.ticker:
             dados["ticker_da_empresa"] = it.ticker

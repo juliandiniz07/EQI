@@ -289,8 +289,16 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
             "total_encontrado": len(encontrados),
             "mostrando": len(mostrados),
             "periodo_ampliado": ampliado,
+            "instrucao_extra": (
+                "Cada evento pode trazer 'resumo_do_documento', extraído do comunicado oficial. Quando existir, use-o para "
+                "responder com os detalhes (opções do investidor, prazos, valores, fatores) em vez de só citar o título. "
+                "Se o resumo não trouxer o que foi perguntado, diga isso com clareza."
+            ),
             "eventos": [
-                {k: e[k] for k in ("empresa", "data", "assunto", "tipo_evento_rotulo", "categoria", "tipo", "tipo_ativo")}
+                {
+                    **{k: e[k] for k in ("empresa", "data", "assunto", "tipo_evento_rotulo", "categoria", "tipo", "tipo_ativo")},
+                    **({"resumo_do_documento": e["resumo"][:1800]} if e.get("resumo") else {}),
+                }
                 for e in mostrados
             ],
         }
