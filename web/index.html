@@ -128,16 +128,29 @@
   }
   .sugestao:hover { border-color: var(--green); color: var(--green); }
 
-  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
   .card {
-    background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px;
-    display: flex; flex-direction: column; gap: 8px;
+    background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 9px 11px;
+    display: flex; flex-direction: column; gap: 5px; cursor: pointer; transition: border-color .15s, background .15s;
   }
+  .card:hover, .card:focus-visible { border-color: rgba(0,200,150,.55); outline: none; }
+  .card.aberto { grid-column: 1 / -1; cursor: default; border-color: rgba(0,200,150,.55); background: color-mix(in srgb, var(--bg-2) 92%, var(--green) 8%); }
+  .card .topo { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .card .chevron { color: var(--muted); font-size: 11px; transition: transform .15s; flex-shrink: 0; }
+  .card.aberto .chevron { transform: rotate(180deg); }
+  .detalhe { display: none; border-top: 1px solid var(--border); margin-top: 4px; padding-top: 9px; font-size: 13.5px; line-height: 1.55; color: #dbe2f0; }
+  .card.aberto .detalhe { display: block; }
+  .detalhe h4 { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--green); margin-bottom: 6px; }
+  .detalhe p { margin: 0 0 8px; }
+  .detalhe ul { margin: 0 0 8px; padding-left: 18px; }
+  .detalhe li { margin-bottom: 3px; }
+  .detalhe .sem-resumo { color: var(--muted); }
+  .detalhe .acoes { margin-top: 8px; }
   .badges { display: flex; flex-wrap: wrap; gap: 6px; }
   .badge {
     --c: var(--c-evento);
-    font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
-    padding: 3px 8px; border-radius: 6px; color: var(--c);
+    font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px;
+    padding: 2px 7px; border-radius: 6px; color: var(--c);
     background: color-mix(in srgb, var(--c) 14%, transparent); border: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
   }
   .badge[data-tipo="OPA"] { --c: var(--c-opa); }
@@ -148,10 +161,11 @@
   .badge[data-tipo="DESDOBRAMENTO"] { --c: var(--c-desdobramento); }
   .badge[data-tipo="LIQUIDACAO"] { --c: var(--c-liquidacao); }
   .badge[data-tipo="FII"] { --c: var(--c-fii); }
-  .card .empresa { font-weight: 600; font-size: 15px; line-height: 1.3; }
-  .card .assunto { color: #c5cde0; font-size: 13.5px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+  .card .empresa { font-weight: 600; font-size: 13.5px; line-height: 1.25; }
+  .card .assunto { color: #c5cde0; font-size: 12.5px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .card .rodape { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 4px; }
-  .card .data { color: var(--muted); font-size: 12.5px; }
+  .card .data { color: var(--muted); font-size: 11.5px; }
+  .card.aberto .assunto { -webkit-line-clamp: unset; }
   .btn-pdf {
     font-size: 12.5px; font-weight: 600; color: var(--green); text-decoration: none;
     border: 1px solid rgba(0,200,150,.4); padding: 5px 10px; border-radius: 8px; white-space: nowrap;
@@ -190,7 +204,7 @@
     #mensagens { padding: 16px 12px 8px; }
     .avatar { width: 30px; height: 30px; }
     .corpo { max-width: calc(100% - 42px); }
-    .cards { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: 1fr 1fr; }
     .dica { display: none; }
   }
 </style>
@@ -356,20 +370,47 @@ function elMensagem(papel) {
   return { msg, corpo };
 }
 
+function formatarResumo(t) {
+  // Resumo em texto: linhas começando com -, * ou • viram lista; o resto vira parágrafo. Tudo escapado.
+  const blocos = []; let lista = null;
+  for (const linha of String(t ?? "").split(/\n/)) {
+    const m = linha.match(/^\s*[-*•]\s+(.*)$/);
+    if (m) { (lista ||= []).push(m[1]); continue; }
+    if (lista) { blocos.push("<ul>" + lista.map((i) => "<li>" + inline(i) + "</li>").join("") + "</ul>"); lista = null; }
+    if (linha.trim()) blocos.push("<p>" + inline(linha.trim()) + "</p>");
+  }
+  if (lista) blocos.push("<ul>" + lista.map((i) => "<li>" + inline(i) + "</li>").join("") + "</ul>");
+  return blocos.join("");
+  function inline(x) { return escapar(x).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>"); }
+}
+
 function elCard(ev) {
   const card = document.createElement("article");
   card.className = "card";
+  card.tabIndex = 0;
+  card.setAttribute("role", "button");
+  card.setAttribute("aria-expanded", "false");
   const badges = `<span class="badge" data-tipo="${escapar(ev.tipo_evento || "")}">${escapar(ev.tipo_evento_rotulo || "Evento")}</span>` +
     (ev.tipo_ativo === "FII" ? `<span class="badge" data-tipo="FII">${ROTULO_FII}</span>` : "");
   const link = linkSeguro(ev.link);
+  const botaoPdf = link ? `<a class="btn-pdf" href="${escapar(link)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : "";
+  const detalhe = ev.resumo
+    ? `<h4>Resumo do documento</h4>${formatarResumo(ev.resumo)}`
+    : `<p class="sem-resumo">O resumo deste documento ainda não está disponível. Abra o PDF para ver os detalhes.</p>`;
   card.innerHTML = `
-    <div class="badges">${badges}</div>
+    <div class="topo"><div class="badges">${badges}</div><span class="chevron" aria-hidden="true">▼</span></div>
     <div class="empresa">${escapar(ev.empresa)}</div>
     <div class="assunto">${escapar(ev.assunto)}</div>
-    <div class="rodape">
-      <span class="data">${escapar(ev.data)}</span>
-      ${link ? `<a class="btn-pdf" href="${escapar(link)}" target="_blank" rel="noopener noreferrer">Ver PDF</a>` : ""}
-    </div>`;
+    <div class="rodape"><span class="data">${escapar(ev.data)}</span></div>
+    <div class="detalhe">${detalhe}<div class="acoes">${botaoPdf}</div></div>`;
+  const alternar = () => {
+    const aberto = card.classList.toggle("aberto");
+    card.setAttribute("aria-expanded", String(aberto));
+  };
+  card.addEventListener("click", (e) => { if (!e.target.closest("a, .detalhe")) alternar(); });
+  card.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && e.target === card) { e.preventDefault(); alternar(); }
+  });
   return card;
 }
 
