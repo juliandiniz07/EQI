@@ -100,7 +100,17 @@ TIPOS_EVENTO: list[tuple[str, str, list[str]]] = [
     (
         "EMISSAO",
         "Emissão",
-        [r"oferta publica (?:primaria )?de (?:distribuicao de )?cotas", r"emissao de (?:novas )?cotas", r"subscricao"],
+        [
+            r"oferta publica (?:primaria )?de (?:distribuicao de )?cotas",
+            r"emissao de (?:novas )?cotas",
+            r"subscri",
+            r"aumento (?:de |do )?capital",
+            r"direito de preferencia",
+            r"sobras? de (?:acoes|cotas)",
+            r"oferta (?:publica|restrita) (?:primaria |secundaria )?(?:de )?(?:distribuicao )?(?:de )?acoes",
+            r"follow[ -]?on",
+            r"emissao de (?:debentures|acoes|bonus)",
+        ],
     ),
     (
         "RESGATE",

@@ -103,3 +103,8 @@ def test_nao_repete_evento_da_mesma_empresa_com_nome_diferente(banco):
         ])
         achados = eventos.buscar(con, eventos.Filtro(HOJE.replace(day=20), HOJE, ["axia"]))
     assert len(achados) == 1
+
+
+def test_aumento_de_capital_e_subscricao():
+    for t in ["Aumento de capital privado", "Direito de preferência para subscrição", "Aviso aos acionistas - sobras de ações", "Follow-on aprovado"]:
+        assert eventos.classificar(t) == "EMISSAO", t

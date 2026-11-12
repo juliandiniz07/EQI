@@ -124,3 +124,12 @@ def test_redator_gemini_monta_conversa_e_tenta_proximo_modelo():
     assert [c.role for c in contents] == ["user", "model", "user"]
     assert "PERGUNTA DO ASSESSOR: E a Petrobras?" in contents[-1].parts[0].text
     assert "Assistente EQI" in config.system_instruction
+
+
+def test_sem_o_tipo_pedido_mostra_outros_eventos_da_empresa(cliente):
+    h = entrar(cliente)
+    corpo = cliente.post("/consultar", json={"pergunta": "subscrição da Gerdau"}, headers=h).json()
+    assert corpo["meta"]["tipo_relaxado"] is True
+    assert corpo["eventos"] and corpo["eventos"][0]["empresa"] == "GERDAU S.A."
+    _, _, dados = cliente.redator.chamadas[-1]
+    assert dados["tipo_relaxado"] is True

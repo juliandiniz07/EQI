@@ -220,11 +220,18 @@ class RoboDeGrupos:
                 f.desde = it.ate - timedelta(days=DIAS_AMPLIACAO - 1)
                 achados = eventos.buscar(con, f)
                 ampliado = bool(achados)
+            tipo_relaxado = False
+            if not achados and it.tipos and it.termos_empresa:
+                f = it.filtro()
+                f.tipos = []
+                f.desde = it.ate - timedelta(days=DIAS_AMPLIACAO - 1)
+                achados = eventos.buscar(con, f)
+                tipo_relaxado = bool(achados)
         mostrados = achados[:MAX_EVENTOS_GRUPO]
         dados = {
             "canal": "grupo de WhatsApp: responda em até ~80 palavras, sem markdown, no máximo 2 parágrafos",
             "hoje": self.hoje().strftime("%d/%m/%Y"),
-            "total_encontrado": len(achados), "mostrando": len(mostrados), "periodo_ampliado": ampliado,
+            "total_encontrado": len(achados), "mostrando": len(mostrados), "periodo_ampliado": ampliado, "tipo_relaxado": tipo_relaxado,
             "instrucao_extra": "Use 'resumo_do_documento', quando existir, para detalhar opções, prazos e valores.",
             "eventos": [
                 {**{k: e[k] for k in ("empresa", "data", "assunto", "tipo_evento_rotulo", "tipo_ativo")},

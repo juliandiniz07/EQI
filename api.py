@@ -280,19 +280,29 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
                 filtro.desde = interp.ate - timedelta(days=DIAS_AMPLIACAO - 1)
                 encontrados = eventos.buscar(con, filtro)
                 ampliado = bool(encontrados)
+            tipo_relaxado = False
+            if not encontrados and interp.tipos and interp.termos_empresa:
+                filtro = interp.filtro()
+                filtro.tipos = []  # a empresa existe, mas nenhum evento do tipo pedido: mostra os outros eventos dela
+                filtro.desde = interp.ate - timedelta(days=DIAS_AMPLIACAO - 1)
+                encontrados = eventos.buscar(con, filtro)
+                tipo_relaxado = bool(encontrados)
 
         mostrados = encontrados[:MAX_EVENTOS_RESPOSTA]
-        meta = {**interp.meta(), "total": len(encontrados), "periodo_ampliado": ampliado}
+        meta = {**interp.meta(), "total": len(encontrados), "periodo_ampliado": ampliado, "tipo_relaxado": tipo_relaxado}
         contexto = {
             "hoje": hoje().strftime("%d/%m/%Y"),
             "filtros_entendidos": meta,
             "total_encontrado": len(encontrados),
             "mostrando": len(mostrados),
             "periodo_ampliado": ampliado,
+            "tipo_relaxado": tipo_relaxado,
             "instrucao_extra": (
                 "Cada evento pode trazer 'resumo_do_documento', extraído do comunicado oficial. Quando existir, use-o para "
                 "responder com os detalhes (opções do investidor, prazos, valores, fatores) em vez de só citar o título. "
-                "Se o resumo não trouxer o que foi perguntado, diga isso com clareza."
+                "Se o resumo não trouxer o que foi perguntado, diga isso com clareza. "
+                "Se 'tipo_relaxado' for verdadeiro, não existe evento do tipo pedido para essa empresa: diga isso e apresente "
+                "os demais eventos dela, indicando se algum se relaciona com a pergunta."
             ),
             "eventos": [
                 {
