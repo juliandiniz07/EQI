@@ -71,3 +71,10 @@ def test_resumo_chega_ao_assistente(banco, monkeypatch):
     c.post("/consultar", json={"pergunta": "teve OPA da Brava?"}, headers={"Authorization": f"Bearer {tok}"})
     assert "venda facilitada" in Redator.dados["eventos"][0]["resumo_do_documento"]
     assert "instrucao_extra" in Redator.dados
+
+
+def test_filtra_por_empresa(banco, monkeypatch):
+    hoje(monkeypatch)
+    res = ResumidorFalso()
+    resumos.processar_pendentes(res, dias=400, limite=50, empresa="gerdau", client=object(), baixar_fn=lambda cl, l: ("pdf", b"%PDF-x"))
+    assert {e for e, _ in res.vistos} == {"GERDAU S.A."}

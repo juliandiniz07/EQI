@@ -6,6 +6,7 @@ e não só com o título. A leitura roda uma vez por documento, logo após a col
 Uso manual (recupera eventos já coletados):
   python resumos.py              # últimos 60 dias, até 40 documentos
   python resumos.py --dias 120 --limite 100
+  python resumos.py --empresa inter --dias 400   # só eventos de uma empresa, em qualquer época
 """
 
 import argparse
@@ -102,7 +103,7 @@ class ResumidorGemini:
         return None
 
 
-def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, client: httpx.Client | None = None, baixar_fn=baixar) -> dict:
+def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, empresa: str | None = None, client: httpx.Client | None = None, baixar_fn=baixar) -> dict:
     """Resume os eventos recentes que ainda não têm resumo. Nunca levanta exceção para o chamador."""
     contagem = {"ok": 0, "sem_conteudo": 0, "erro": 0}
     corte = date.today() - timedelta(days=dias)
@@ -115,8 +116,11 @@ def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, client: htt
             "AND COALESCE(resumo_tentativas,0) < ?", (MAX_TENTATIVAS,)
         ):
             q = eventos.parse_data(r["data_entrega"])
-            if q and q.date() >= corte:
-                candidatos.append((q, r))
+            if not q or q.date() < corte:
+                continue
+            if empresa and f" {eventos.termo(empresa)} " not in f" {eventos.termo(r['empresa'])} {eventos.termo(r['assunto'])} ":
+                continue
+            candidatos.append((q, r))
         candidatos.sort(key=lambda x: x[0], reverse=True)
 
         for _, r in candidatos[:limite]:
@@ -149,13 +153,13 @@ def resumidor_do_ambiente() -> ResumidorGemini | None:
     return ResumidorGemini(chave, modelos)
 
 
-def executar(dias: int = 60, limite: int = 40) -> dict | None:
+def executar(dias: int = 60, limite: int = 40, empresa: str | None = None) -> dict | None:
     try:
         resumidor = resumidor_do_ambiente()
         if resumidor is None:
             log.warning("GEMINI_API_KEY não definida: documentos não serão lidos.")
             return None
-        return processar_pendentes(resumidor, dias=dias, limite=limite)
+        return processar_pendentes(resumidor, dias=dias, limite=limite, empresa=empresa)
     except Exception:
         log.exception("Erro na leitura de documentos")
         return None
@@ -167,5 +171,6 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--dias", type=int, default=60)
     p.add_argument("--limite", type=int, default=40)
+    p.add_argument("--empresa", help="só eventos dessa empresa (ex.: inter, brava)")
     a = p.parse_args()
-    executar(a.dias, a.limite)
+    executar(a.dias, a.limite, a.empresa)
