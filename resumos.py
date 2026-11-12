@@ -12,6 +12,7 @@ import argparse
 import logging
 import os
 import re
+import time
 from datetime import date, timedelta
 
 import httpx
@@ -24,6 +25,8 @@ log = logging.getLogger("resumos")
 
 MAX_BYTES = 15 * 1024 * 1024
 MAX_TENTATIVAS = 3
+INTERVALO_SEG = float(os.getenv("RESUMO_INTERVALO_SEG", "7"))  # a cota gratuita do Gemini aceita poucas chamadas por minuto
+ESPERA_429_SEG = 30
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
     "Accept": "application/pdf,text/html;q=0.9,*/*;q=0.8",
@@ -61,6 +64,13 @@ class ResumidorGemini:
 
         self._client = genai.Client(api_key=api_key)
         self._modelos = modelos
+        self._ultima = 0.0
+
+    def _ritmo(self):
+        falta = INTERVALO_SEG - (time.monotonic() - self._ultima)
+        if falta > 0:
+            time.sleep(falta)
+        self._ultima = time.monotonic()
 
     def resumir(self, empresa: str, assunto: str, tipo: str, conteudo) -> str | None:
         from google.genai import errors, types
@@ -69,16 +79,26 @@ class ResumidorGemini:
         cabecalho = types.Part.from_text(text=f"Empresa: {empresa}\nAssunto: {assunto}")
         config = types.GenerateContentConfig(system_instruction=PROMPT, temperature=0.1, max_output_tokens=900)
         for modelo in self._modelos:
-            try:
-                resp = self._client.models.generate_content(
-                    model=modelo, contents=[types.Content(role="user", parts=[cabecalho, parte])], config=config
-                )
-                if resp.text and resp.text.strip():
-                    return resp.text.strip()
-            except errors.APIError as e:
-                log.warning("Resumo: falha no modelo %s (%s)", modelo, getattr(e, "code", "?"))
-            except Exception:
-                log.exception("Resumo: erro inesperado no modelo %s", modelo)
+            for tentativa in (1, 2):
+                self._ritmo()
+                try:
+                    resp = self._client.models.generate_content(
+                        model=modelo, contents=[types.Content(role="user", parts=[cabecalho, parte])], config=config
+                    )
+                    if resp.text and resp.text.strip():
+                        return resp.text.strip()
+                    break
+                except errors.APIError as e:
+                    codigo = getattr(e, "code", "?")
+                    log.warning("Resumo: falha no modelo %s (%s)", modelo, codigo)
+                    if codigo == 429 and tentativa == 1:
+                        log.info("Limite de uso do Gemini: aguardando %ds...", ESPERA_429_SEG)
+                        time.sleep(ESPERA_429_SEG)
+                        continue
+                    break
+                except Exception:
+                    log.exception("Resumo: erro inesperado no modelo %s", modelo)
+                    break
         return None
 
 
