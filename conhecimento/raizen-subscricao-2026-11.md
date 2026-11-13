@@ -31,6 +31,16 @@ Montante: mínimo de R$ 3,5 bilhões e máximo de ~R$ 39,8 bilhões
 
  
 
+Sobre o código RAIZ55
+
+Desde 03/11/2026, as ações preferenciais da Raízen, que eram negociadas como RAIZ4, passam a ser negociadas como RAIZ55. Elas são as ações preferenciais classe A (PNA).
+
+A troca do código foi automática, e a mudança estava prevista nos documentos do aumento de capital privado. O cliente não precisa fazer nada.
+
+Junto com o novo código, a cotação passou a ser por lote de 100 ações (fator de cotação 100). A quantidade de ações, os direitos e o valor da posição do cliente não mudaram, só a forma como o preço aparece na tela.
+
+ 
+
 Contexto
 O aumento de capital faz parte do Plano de Recuperação Extrajudicial da Raízen e é condição para o plano entrar em vigor. A Shell vai aportar até R$ 3,5 bilhões em dinheiro, e a Aguassanta pode aportar até R$ 500 milhões. Credores do plano vão converter dívidas em Units. Os recursos irão para capital de giro e para pagar dívidas.
 
@@ -183,3 +193,6 @@ Até 3 dias úteis após a homologação. As ON e as Units passam a ser negociad
 
 16. Vale a pena?
 Participar significa colocar dinheiro novo em uma empresa em recuperação extrajudicial; não participar significa diluição. A orientação é vender o papel e os direitos. Cada caso deve passar pelo suitability do cliente. Se o cliente quiser participar, a pergunta-chave é: "você colocaria dinheiro novo na Raízen hoje, a ~R$ 0,25 por ação?"
+
+17. O que é o código RAIZ55? Antes eu tinha RAIZ4.
+RAIZ55 é o novo código das ações preferenciais classe A (PNA) da Raízen, que substituiu o RAIZ4 em 03/11/2026. A troca foi automática e já estava prevista nos documentos do aumento de capital. Sua quantidade de ações e seus direitos não mudaram. O que mudou é que a cotação passou a ser por lote de 100 ações.
