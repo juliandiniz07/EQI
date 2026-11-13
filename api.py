@@ -130,7 +130,7 @@ class RedatorGemini:
     def __init__(self, api_key: str, modelos: list[str]):
         from google import genai
 
-        self._client = genai.Client(api_key=api_key)
+        self._client = genai.Client(api_key=api_key, http_options={"api_version": "v1beta"})
         self._modelos = modelos
 
     def escolher_eventos(self, pergunta: str, candidatos: list[dict], maximo: int = 2) -> dict | None:
@@ -250,7 +250,7 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
         log.warning("SECRET_KEY não definida: os logins caem sempre que a API reiniciar.")
 
     if redator is None and os.getenv("GEMINI_API_KEY"):
-        modelos = [m.strip() for m in os.getenv("GEMINI_MODELOS", "gemini-flash-lite-latest,gemini-flash-latest").split(",") if m.strip()]
+        modelos = [m.strip() for m in os.getenv("GEMINI_MODELOS", "gemini-3.5-flash-lite,gemini-3.8-flash,gemini-flash-lite-latest,gemini-flash-latest").split(",") if m.strip()]
         redator = RedatorGemini(os.environ["GEMINI_API_KEY"], modelos)
     if redator is None:
         log.warning("GEMINI_API_KEY não definida: respostas serão montadas sem IA.")
@@ -274,7 +274,7 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
     if cfg_grupos.ativo:
         classificador = None
         if os.getenv("GEMINI_API_KEY"):
-            modelos_c = [m.strip() for m in os.getenv("GEMINI_MODELOS", "gemini-flash-lite-latest,gemini-flash-latest").split(",") if m.strip()]
+            modelos_c = [m.strip() for m in os.getenv("GEMINI_MODELOS", "gemini-3.5-flash-lite,gemini-3.8-flash,gemini-flash-lite-latest,gemini-flash-latest").split(",") if m.strip()]
             classificador = grupos.ClassificadorGemini(os.environ["GEMINI_API_KEY"], modelos_c)
         robo = grupos.RoboDeGrupos(
             cfg_grupos, interpretador, redator, classificador, grupos.EnviadorEvolution(cfg_grupos), resposta_sem_ia, hoje=hoje,

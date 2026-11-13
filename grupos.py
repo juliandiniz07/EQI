@@ -87,7 +87,7 @@ class ClassificadorGemini:
     def __init__(self, api_key: str, modelos: list[str]):
         from google import genai
 
-        self._client = genai.Client(api_key=api_key)
+        self._client = genai.Client(api_key=api_key, http_options={"api_version": "v1beta"})
         self._modelos = modelos
 
     def relevante(self, texto: str, contexto: list[str]) -> bool | None:

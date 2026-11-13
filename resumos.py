@@ -98,7 +98,7 @@ class ResumidorGemini:
     def __init__(self, api_key: str, modelos: list[str]):
         from google import genai
 
-        self._client = genai.Client(api_key=api_key)
+        self._client = genai.Client(api_key=api_key, http_options={"api_version": "v1beta"})
         self._modelos = modelos
         self._ultima = 0.0
 
@@ -201,7 +201,7 @@ def resumidor_do_ambiente() -> ResumidorGemini | None:
     chave = os.getenv("GEMINI_API_KEY")
     if not chave:
         return None
-    modelos = [m.strip() for m in os.getenv("GEMINI_MODELOS", "gemini-flash-lite-latest,gemini-flash-latest").split(",") if m.strip()]
+    modelos = [m.strip() for m in os.getenv("GEMINI_MODELOS", "gemini-3.5-flash-lite,gemini-3.8-flash,gemini-flash-lite-latest,gemini-flash-latest").split(",") if m.strip()]
     return ResumidorGemini(chave, modelos)
 
 
