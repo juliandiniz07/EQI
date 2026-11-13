@@ -60,3 +60,9 @@ def test_ficha_real_da_raizen_nao_vale_para_logum():
     hoje = date(2026, 11, 12)
     assert conhecimento.buscar_do_evento("RAIZEN", "Aumento de Capital Privado, Instituição do Programa de Units", hoje)
     assert conhecimento.buscar_do_evento("RAIZEN", "Venda de Participação na Logum Logística S.A.", hoje) == []
+
+
+def test_instrucao_cobre_recomendacao_e_orientacao():
+    ins = conhecimento.INSTRUCAO_FICHAS.lower()
+    for palavra in ("recomendação", "orientação", "devo vender", "vale a pena", "o que fazer"):
+        assert palavra in ins
