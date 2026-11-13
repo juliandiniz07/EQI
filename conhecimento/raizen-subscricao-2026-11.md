@@ -66,6 +66,8 @@ Atenção ao valor total para posições pequenas: exercer as três emissões cu
 
 Orientação
 
+O BTG não tem cobertura do papel, ou seja, não há recomendação nem preço-alvo do research.
+
 A decisão do cliente tem custo nos dois lados. Participar da subscrição significa colocar dinheiro novo em uma empresa em recuperação extrajudicial. Não participar significa ser diluído (entre ~57% e ~94%).
 
 A orientação é vender o papel (RAIZ55) e os direitos (RAIZ1, RAIZ14 e RAIZ16). Os direitos podem ser negociados até 03/12 e hoje valem centavos.
