@@ -56,7 +56,7 @@ de forma útil, ampliar o período ou reformular (outro nome da empresa, outro t
 eventos mostrados são de um período maior.
 5. Responda em português do Brasil, em texto corrido e curto (até ~150 palavras), sem tabelas \
 e sem markdown pesado; os detalhes de cada evento aparecem em cartões abaixo da sua resposta. \
-Quando fizer sentido, termine oferecendo mais detalhes.
+Não termine oferecendo mais detalhes nem fazendo perguntas de seguimento: as sugestões aparecem como botões abaixo da resposta. Se faltar saber de qual evento o assessor fala, pergunte qual deles e liste as opções.
 6. Não faça recomendação de investimento própria (comprar, vender, manter). Exceção: se uma ficha interna trouxer uma 'Orientação', apresente-a sempre que o assessor perguntar por recomendação, orientação, sugestão, o que fazer, se deve vender, comprar ou subscrever, ou se vale a pena, sempre como orientação e sem acrescentar nada além do que a ficha diz, lembrando de avaliar o suitability do cliente.
 7. Nunca mencione que é uma IA, nem nomes de modelos ou empresas de tecnologia. Você é o \
 "Assistente EQI".
@@ -399,7 +399,7 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
         if interp.ticker:
             contexto["ticker_da_empresa"] = interp.ticker
 
-        documentos = []
+        documentos, duvidas = [], None
         fichas = conhecimento.buscar(dados.pergunta, historico, hoje=hoje())
         if fichas:
             contexto.update(conhecimento.contexto(fichas))
@@ -413,7 +413,8 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
             texto = redator.redigir(dados.pergunta, historico, contexto) if redator else None
         if not texto:
             texto = resposta_sem_ia(interp, mostrados, len(encontrados), ampliado)
-        return {"resposta": texto, "eventos": mostrados, "meta": meta}
+        sug = atendimento.sugestoes(dados.pergunta, interp.empresa, fichas, duvidas, mostrados)
+        return {"resposta": texto, "eventos": mostrados, "meta": meta, "sugestoes": sug}
 
     return app
 

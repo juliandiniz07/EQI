@@ -127,6 +127,8 @@
     padding: 8px 12px; border-radius: 999px; cursor: pointer; font-size: 13.5px; transition: all .15s; text-align: left;
   }
   .sugestao:hover { border-color: var(--green); color: var(--green); }
+  .sugestao:disabled { opacity: .45; cursor: default; }
+  .sugestoes.seguimento { margin-top: 8px; }
 
   .cards { display: flex; flex-direction: column; gap: 4px; }
   .card {
@@ -494,6 +496,17 @@ function renderizarMensagem(m) {
       corpo.appendChild(mais);
     }
   }
+  if (m.sugestoes && m.sugestoes.length) {
+    const sug = document.createElement("div");
+    sug.className = "sugestoes seguimento";
+    m.sugestoes.forEach((s) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "sugestao"; b.textContent = s;
+      b.addEventListener("click", () => { sug.querySelectorAll("button").forEach((x) => (x.disabled = true)); enviar(s); });
+      sug.appendChild(b);
+    });
+    corpo.appendChild(sug);
+  }
   $("trilho").appendChild(msg);
   return msg;
 }
@@ -575,7 +588,7 @@ async function enviar(texto) {
       return mostrarLogin("Sua sessão expirou. Entre novamente.");
     }
     if (!r.ok) throw new Error(dados.detail || "Não consegui consultar agora. Tente novamente em instantes.");
-    const resposta = { role: "assistant", content: dados.resposta, eventos: dados.eventos || [], meta: dados.meta || {} };
+    const resposta = { role: "assistant", content: dados.resposta, eventos: dados.eventos || [], meta: dados.meta || {}, sugestoes: dados.sugestoes || [] };
     conversa.push(resposta);
     $("digitando")?.remove();
     alvo = renderizarMensagem(resposta);

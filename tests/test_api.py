@@ -205,3 +205,9 @@ def test_detalhar_sem_material_e_sem_ia(banco, monkeypatch):
 
 def test_prompt_proibe_saudacao_repetida():
     assert "Não cumprimente" in api.SYSTEM_PROMPT and "Olá" in api.SYSTEM_PROMPT
+
+
+def test_consultar_devolve_sugestoes(cliente):
+    h = entrar(cliente)
+    corpo = cliente.post("/consultar", json={"pergunta": "Teve recuperação judicial?", "historico": []}, headers=h).json()
+    assert isinstance(corpo["sugestoes"], list) and corpo["sugestoes"] and all(isinstance(s, str) for s in corpo["sugestoes"])

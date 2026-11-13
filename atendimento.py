@@ -180,3 +180,41 @@ def contexto_documentos(docs: list[dict], duvidas: list[dict] | None = None) -> 
             "instrucao_resposta_direta": INSTRUCAO_AMBIGUA,
         }
     return {"documentos_anexados": [d["rotulo"] for d in docs], "instrucao_resposta_direta": INSTRUCAO_DOCUMENTOS}
+
+
+def _curto(texto: str, n: int = 60) -> str:
+    texto = " ".join((texto or "").split())
+    return texto if len(texto) <= n else texto[: n - 1].rstrip() + "…"
+
+
+def sugestoes(pergunta: str, empresa: str | None, fichas: list, duvidas: list[dict] | None, mostrados: list[dict], maximo: int = 4) -> list[str]:
+    """Perguntas de seguimento para virarem botões. Cada uma já cita a empresa, para a conversa continuar nesse evento."""
+    saida: list[str] = []
+    if duvidas:  # o robô não sabe de qual evento se trata: cada opção vira um botão
+        for e in duvidas[:maximo]:
+            saida.append(f"{e['empresa'].strip()}: {_curto(e['assunto'], 70)} ({e['data'][:5]})")
+        return saida
+    if fichas:
+        f = fichas[0]
+        txt, nome = f.texto, f.empresa
+        if "Orientação" in txt:
+            saida.append(f"Qual a orientação para {nome}?")
+        if "Prazos" in txt or "Cronograma" in txt or "Prazo" in txt:
+            saida.append(f"Quais os prazos de {nome}?")
+        if "Passo a passo do cliente" in txt or "Caminho para o cliente" in txt:
+            saida.append(f"Como o cliente faz em {nome}?")
+        if "Possíveis perguntas dos clientes" in txt:
+            saida.append(f"Quais as dúvidas mais comuns dos clientes sobre {nome}?")
+    elif empresa and mostrados:
+        saida += [f"Quais os prazos de {empresa}?", f"O que o cliente precisa fazer em {empresa}?"]
+        if len(mostrados) > 1:
+            saida.append(f"Qual o evento mais recente de {empresa}?")
+    elif mostrados:  # pergunta geral: um botão por evento listado, para aprofundar
+        vistos = set()
+        for e in mostrados:
+            nome = (e.get("empresa") or "").strip()
+            if nome and nome not in vistos:
+                vistos.add(nome)
+                saida.append(f"Detalhar {nome}: {_curto(e.get('assunto', ''), 50)}")
+    pergunta_norm = " ".join(pergunta.lower().split())
+    return [s for s in saida if " ".join(s.lower().split()) != pergunta_norm][:maximo]

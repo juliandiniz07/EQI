@@ -63,3 +63,16 @@ def test_evento_ambiguo_pergunta_em_vez_de_chutar():
     assert docs == [] and [d["data"] for d in duvidas] == ["05/11/2026", "20/10/2026"]
     ctx = atendimento.contexto_documentos(docs, duvidas)
     assert len(ctx["eventos_possiveis"]) == 2 and "NÃO chute" in ctx["instrucao_resposta_direta"]
+
+
+def test_sugestoes_de_seguimento():
+    from conhecimento import Ficha
+
+    ficha = Ficha("x.md", "Raízen", ["raizen"], [], None, "Orientação\n...\nCronograma\n...\nPasso a passo do cliente\n...\nPossíveis perguntas dos clientes\n")
+    s = atendimento.sugestoes("subscrição de Raízen", "Raízen", [ficha], None, [])
+    assert s[0] == "Qual a orientação para Raízen?" and len(s) == 4 and all("Raízen" in x for x in s)
+    duv = [{"empresa": "RAIZEN S.A.", "assunto": "Aumento de Capital Privado", "data": "06/11/2026"},
+           {"empresa": "RAIZEN S.A.", "assunto": "Novo código de negociação: RAIZ55", "data": "03/11/2026"}]
+    assert atendimento.sugestoes("qual o prazo?", None, [], duv, [])[0] == "RAIZEN S.A.: Aumento de Capital Privado (06/11)"
+    ev = [{"empresa": "LIGHT S.A.", "assunto": "RJ"}, {"empresa": "WEG S.A.", "assunto": "Desdobramento"}]
+    assert atendimento.sugestoes("teve algo hoje?", None, [], None, ev) == ["Detalhar LIGHT S.A.: RJ", "Detalhar WEG S.A.: Desdobramento"]
