@@ -142,7 +142,7 @@ Estrutura (omita a seção inteira quando o material não trouxer a informação
 7) Qualquer observação didática do material (ex.: sobre uma classe de ação) em uma ou duas frases.
 8) Atenção à tela: confusões comuns de cotação ou de sistema, se houver.
 9) Importante: lista "- " com restrições, riscos, irrevogabilidade, devolução de dinheiro etc.
-Se o material trouxer o caminho no sistema da EQI para aprovar, inclua uma linha "Como aprovar: ...".
+Se o material trouxer o caminho no sistema para aprovar, inclua uma linha "Como aprovar: ...". Se trouxer um passo a passo do cliente, inclua uma seção "Passo a passo do cliente" com o caminho no aplicativo, fiel ao material.
 Não recomende compra, venda ou subscrição por conta própria. Se o material trouxer uma 'Orientação', inclua-a em uma seção chamada Orientação, fiel ao material. Seja completo, mas enxuto (até ~330 palavras)."""
 
 

@@ -30,7 +30,7 @@ MAX_CHARS = 12000
 INSTRUCAO_FICHAS = (
     "O bloco 'fichas_internas_eqi' é o material oficial preparado pela EQI e tem PRIORIDADE sobre qualquer outra fonte. "
     "Responda exatamente o que o assessor perguntou, de forma direta, com os valores, datas e passos da ficha; não despeje a ficha inteira. "
-    "Se a seção de possíveis perguntas dos clientes cobrir a dúvida, use a resposta dela. Se o assessor perguntar o que fazer, diga o caminho "
+    "Se a seção de possíveis perguntas dos clientes cobrir a dúvida, use a resposta dela. Se o assessor ou o cliente perguntar como fazer, como reservar ou onde faz, dê o 'Passo a passo do cliente' (aplicativo) e, para o assessor, o 'Caminho para aprovar' (Access). Se o assessor perguntar o que fazer, diga o caminho "
     "e os prazos da ficha. Se a ficha não cobrir a pergunta, diga isso com clareza e use só os demais dados. PERGUNTAS SOBRE O QUE FAZER: trate como a mesma pergunta qualquer forma de pedir recomendação, orientação, posição, sugestão, conselho ou opinião da casa ('qual a recomendação?', 'qual a orientação?', 'o que vocês indicam/sugerem?', 'o que digo ao cliente?', 'devo vender?', 'compro?', 'subscrevo?', 'vale a pena?', 'o que fazer?'). Nesses casos, se a ficha tiver uma seção 'Orientação', responda com ela logo no início, nas palavras da ficha, chamando-a de orientação, e complete com o lembrete de suitability e com os prazos relevantes da ficha. Nunca opine por conta própria nem vá além do que a seção diz; se a ficha não tiver a seção, diga que não há orientação cadastrada para esse evento e devolva a pergunta-chave da ficha, se houver."
 )
 

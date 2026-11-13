@@ -83,6 +83,12 @@ Localize RAIZ1, RAIZ14 e RAIZ16 (cada um aparece como um evento separado), confi
 
  
 
+Passo a passo do cliente
+
+Acesse o aplicativo EQI Investimentos > Investir > Renda Variável > Subscrições e Sobras > Disponíveis > Selecione a subscrição e reserve.
+
+ 
+
 Cronograma
 
 Evento	Data
