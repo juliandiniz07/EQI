@@ -23,6 +23,7 @@ import httpx
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request
 
 import atendimento
+import conhecimento
 import eventos
 from consulta import Interpretador
 
@@ -226,7 +227,10 @@ class RoboDeGrupos:
         if it.ticker:
             dados["ticker_da_empresa"] = it.ticker
         documentos = []
-        if self.redator and atendimento.pergunta_especifica(texto):
+        fichas = conhecimento.buscar(texto, historico, hoje=self.hoje())
+        if fichas:
+            dados.update(conhecimento.contexto(fichas))
+        if self.redator and not fichas and atendimento.pergunta_especifica(texto):
             documentos, duvidas = atendimento.documentos_para_pergunta(self.redator, texto, achados)
             if documentos or duvidas:
                 dados.update(atendimento.contexto_documentos(documentos, duvidas))

@@ -26,6 +26,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 import atendimento
+import conhecimento
 import eventos
 import grupos
 from consulta import Interpretacao, Interpretador
@@ -329,7 +330,10 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
             contexto["ticker_da_empresa"] = interp.ticker
 
         documentos = []
-        if redator and atendimento.pergunta_especifica(dados.pergunta):
+        fichas = conhecimento.buscar(dados.pergunta, historico, hoje=hoje())
+        if fichas:
+            contexto.update(conhecimento.contexto(fichas))
+        if redator and not fichas and atendimento.pergunta_especifica(dados.pergunta):
             documentos, duvidas = atendimento.documentos_para_pergunta(redator, dados.pergunta, encontrados)
             if documentos or duvidas:
                 contexto.update(atendimento.contexto_documentos(documentos, duvidas))
