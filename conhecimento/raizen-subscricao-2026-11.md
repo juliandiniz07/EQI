@@ -65,6 +65,16 @@ O preço-alvo do BTG é uma referência de valuation, não uma garantia de preç
 
  
 
+Orientação EQI
+
+A decisão do cliente tem custo nos dois lados. Participar da subscrição significa colocar dinheiro novo em uma empresa em recuperação extrajudicial. Não participar significa ser diluído (entre ~57% e ~94%).
+
+A orientação da EQI é vender o papel (RAIZ55) e os direitos (RAIZ1, RAIZ14 e RAIZ16). Os direitos podem ser negociados até 03/12 e hoje valem centavos.
+
+Avalie o suitability e a situação de cada cliente. O cliente que decidir participar deve estar ciente do risco de investir em empresa em recuperação extrajudicial.
+
+ 
+
 📲 Caminho para aprovar
 Access > Produtos > Renda Variável > Subscrição e Sobras > Disponíveis
 
@@ -165,4 +175,4 @@ Até 3 dias úteis após a homologação. As ON e as Units passam a ser negociad
  
 
 16. Vale a pena?
-Depende da visão do cliente sobre a recuperação da Raízen. A pergunta-chave é: “você colocaria dinheiro novo na Raízen hoje, a ~R$ 0,25 por ação?”
+Participar significa colocar dinheiro novo em uma empresa em recuperação extrajudicial; não participar significa diluição. A orientação da EQI é vender o papel e os direitos. Cada caso deve passar pelo suitability do cliente. Se o cliente quiser participar, a pergunta-chave é: "você colocaria dinheiro novo na Raízen hoje, a ~R$ 0,25 por ação?"
