@@ -56,10 +56,7 @@ estão no documento; nunca invente nem complete com conhecimento externo; sem op
 Se o documento for apenas administrativo e não trouxer nenhuma informação útil, responda exatamente: SEM_CONTEUDO."""
 
 
-def baixar(client: httpx.Client, link: str) -> tuple[str, bytes | str] | None:
-    """('pdf', bytes) | ('texto', str) | None se não foi possível obter."""
-    r = client.get(link)
-    r.raise_for_status()
+def _extrair(r: httpx.Response, link: str) -> tuple[str, bytes | str] | None:
     corpo, tipo = r.content, r.headers.get("content-type", "")
     if len(corpo) > MAX_BYTES:
         log.warning("Documento grande demais (%d bytes): %s", len(corpo), link)
@@ -70,7 +67,33 @@ def baixar(client: httpx.Client, link: str) -> tuple[str, bytes | str] | None:
         texto = re.sub(r"\s+", " ", BeautifulSoup(r.text, "html.parser").get_text(" ", strip=True))
         if len(texto) > 200:
             return "texto", texto[:60000]
-    log.warning("Documento sem conteúdo aproveitável (tipo=%s, %d bytes, início=%r) em %s", tipo, len(corpo), corpo[:120], link)
+    return None
+
+
+def baixar(client: httpx.Client, link: str) -> tuple[str, bytes | str] | None:
+    """('pdf', bytes) | ('texto', str) | None se não foi possível obter.
+
+    A CVM às vezes devolve corpo vazio ou uma página de sessão a clientes sem cookie. Nesse caso o robô faz o que o navegador faz:
+    abre a página inicial do RAD para receber o cookie e pede de novo, com a origem indicada e, por fim, pelo caminho alternativo."""
+    ultimo = None
+    variantes = [link]
+    alternativo = link.replace("/ENETWeb/", "/ENET/") if "/ENETWeb/" in link else link.replace("/ENET/", "/ENETWeb/")
+    if alternativo != link:
+        variantes.append(alternativo)
+    for i, url in enumerate(variantes):
+        for tentativa in (1, 2):
+            if i or tentativa == 2:
+                try:
+                    client.get(url.split("/frmDownloadDocumento")[0] + "/")  # cookie de sessão
+                except httpx.HTTPError:
+                    pass
+            r = client.get(url, headers={"Referer": url.split("/frmDownloadDocumento")[0] + "/", "Accept": "*/*"})
+            r.raise_for_status()
+            doc = _extrair(r, url)
+            if doc:
+                return doc
+            ultimo = (r.headers.get("content-type", ""), len(r.content), r.content[:120])
+    log.warning("Documento sem conteúdo aproveitável (tipo=%s, %d bytes, início=%r) em %s", *ultimo, link)
     return None
 
 
