@@ -122,7 +122,7 @@ def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, empresa: st
     """Resume os eventos recentes que ainda não têm resumo. Nunca levanta exceção para o chamador."""
     contagem = {"ok": 0, "sem_conteudo": 0, "erro": 0}
     corte = date.today() - timedelta(days=dias)
-    client = client or httpx.Client(headers=HEADERS, timeout=45, follow_redirects=True)
+    client = client or httpx.Client(headers=HEADERS, timeout=httpx.Timeout(60, connect=20), follow_redirects=True)
     with eventos.conectar() as con:
         candidatos = []
         filtro_sql = (
@@ -141,10 +141,13 @@ def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, empresa: st
             candidatos.append((q, r))
         candidatos.sort(key=lambda x: x[0], reverse=True)
 
+        falhas_seguidas = 0
         for _, r in candidatos[:limite]:
             status, resumo = "erro", None
+            baixou = False
             try:
                 doc = baixar_fn(client, r["link"])
+                baixou = bool(doc)
                 if doc:
                     texto = resumidor.resumir(r["empresa"] or "", r["assunto"] or "", doc[0], doc[1])
                     if texto and texto.strip() == "SEM_CONTEUDO":
@@ -153,6 +156,15 @@ def processar_pendentes(resumidor, dias: int = 60, limite: int = 40, empresa: st
                         status, resumo = "ok", texto
             except Exception as e:
                 log.warning("Resumo: falha em %s (%s): %s", r["empresa"], r["protocolo"], e)
+            if baixou:
+                falhas_seguidas = 0
+            else:
+                falhas_seguidas += 1
+                contagem["erro"] += 1
+                if falhas_seguidas >= 3:
+                    log.error("A CVM não está entregando os documentos (3 falhas seguidas). Interrompendo; tente de novo mais tarde.")
+                    break
+                continue  # falha de download não gasta tentativa: o documento volta na próxima rodada
             contagem["ok" if status == "ok" else "sem_conteudo" if status == "sem_conteudo" else "erro"] += 1
             if refazer and status == "erro":
                 continue  # não apaga o resumo antigo se a nova leitura falhou
@@ -192,6 +204,11 @@ if __name__ == "__main__":
     p.add_argument("--dias", type=int, default=60)
     p.add_argument("--limite", type=int, default=40)
     p.add_argument("--refazer", action="store_true", help="lê de novo e substitui os resumos já existentes")
+    p.add_argument("--zerar", action="store_true", help="devolve às tentativas os eventos que falharam antes")
     p.add_argument("--empresa", help="só eventos dessa empresa (ex.: inter, brava)")
     a = p.parse_args()
+    if a.zerar:
+        with eventos.conectar() as con:
+            con.execute("UPDATE fatos SET resumo_tentativas=0 WHERE resumo IS NULL AND resumo_status='erro'")
+            con.commit()
     executar(a.dias, a.limite, a.empresa, a.refazer)

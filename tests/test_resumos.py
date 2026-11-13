@@ -31,17 +31,18 @@ def test_resume_pendentes_e_guarda_no_banco(banco, monkeypatch):
         assert resumos.processar_pendentes(res, dias=30, limite=50, client=object(), baixar_fn=lambda cl, link: ("pdf", b"%PDF-x")) == {"ok": 0, "sem_conteudo": 0, "erro": 0}
 
 
-def test_falha_no_download_conta_tentativa_e_para_em_3(banco, monkeypatch):
+def test_falha_no_download_nao_gasta_tentativa_e_interrompe_apos_3(banco, monkeypatch):
     hoje(monkeypatch)
+    chamadas = []
 
     def quebra(cl, link):
+        chamadas.append(link)
         raise RuntimeError("bloqueado")
 
-    for _ in range(4):
-        c = resumos.processar_pendentes(ResumidorFalso(), dias=30, limite=1, client=object(), baixar_fn=quebra)
+    c = resumos.processar_pendentes(ResumidorFalso(), dias=30, limite=50, client=object(), baixar_fn=quebra)
+    assert len(chamadas) == 3 and c["erro"] == 3  # a CVM não entrega: para cedo em vez de queimar a lista toda
     with eventos.conectar() as con:
-        assert con.execute("SELECT MAX(resumo_tentativas) FROM fatos").fetchone()[0] == 3
-        assert con.execute("SELECT COUNT(*) FROM fatos WHERE resumo IS NOT NULL").fetchone()[0] == 0
+        assert con.execute("SELECT COALESCE(MAX(resumo_tentativas),0) FROM fatos").fetchone()[0] == 0
 
 
 def test_sem_conteudo_nao_vira_resumo(banco, monkeypatch):
