@@ -5,6 +5,7 @@ Cada ficha é um arquivo .md na pasta `conhecimento/`, com um cabeçalho simples
     ---
     empresa: Raízen
     termos: raizen, raiz55, raiz1, raiz14, raiz16
+    assunto: aumento de capital, subscricao   (opcional: a ficha só vale para eventos com esses termos no título)
     validade: 2026-12-08
     ---
     (texto da ficha, no modelo de sempre)
@@ -40,6 +41,7 @@ class Ficha:
     arquivo: str
     empresa: str
     termos: list[str]
+    assuntos: list[str]
     validade: date | None
     texto: str
 
@@ -66,7 +68,8 @@ def _ler(caminho: Path) -> Ficha | None:
             validade = date.fromisoformat(meta["validade"])
         except ValueError:
             log.warning("Ficha %s: validade inválida (use AAAA-MM-DD).", caminho.name)
-    return Ficha(caminho.name, meta.get("empresa", caminho.stem), termos, validade, corpo.strip()[:MAX_CHARS])
+    assuntos = [eventos.termo(t) for t in meta.get("assunto", "").split(",") if eventos.termo(t)]
+    return Ficha(caminho.name, meta.get("empresa", caminho.stem), termos, assuntos, validade, corpo.strip()[:MAX_CHARS])
 
 
 def carregar(pasta: Path = PASTA) -> list[Ficha]:
@@ -108,3 +111,9 @@ def buscar(pergunta: str, historico: list[dict] | None = None, hoje: date | None
 
 def contexto(fichas: list[Ficha]) -> dict:
     return {"fichas_internas_eqi": [f"{f.empresa}\n{f.texto}" for f in fichas], "instrucao_fichas": INSTRUCAO_FICHAS}
+
+
+def buscar_do_evento(empresa: str, assunto: str, hoje: date | None = None, pasta: Path = PASTA) -> list[Ficha]:
+    """Fichas válidas para UM evento: a empresa bate e, se a ficha declara 'assunto', o título do evento tem algum desses termos."""
+    norm = f" {eventos.termo(assunto)} "
+    return [f for f in buscar(empresa, hoje=hoje, pasta=pasta) if not f.assuntos or any(a in norm for a in f.assuntos)]

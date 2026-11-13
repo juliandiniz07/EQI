@@ -127,6 +127,25 @@ class LimiteDeUso:
 # Redação da resposta (Gemini)
 # ---------------------------------------------------------------------------
 
+PROMPT_MENSAGEM = """\
+Você transforma o material de um evento corporativo em UMA mensagem pronta para o assessor de investimento enviar ao cliente \
+pelo WhatsApp. Escreva em português do Brasil, em texto simples, SEM emojis, SEM markdown (sem **, sem #, sem tabelas), \
+com linhas curtas e títulos de seção em uma linha própria. Use SOMENTE o que está no material; nunca invente valores, datas ou regras.
+
+Estrutura (omita a seção inteira quando o material não trouxer a informação):
+1) Primeira linha: Empresa (TICKER) | tipo e situação do evento (ex.: Subscrição de ações aberta)
+2) Uma linha com a posição do BTG Pactual Research, só se o material trouxer.
+3) Prazos (para reservar ou manifestar): lista com "- ", cada prazo com data e horário, destacando a data mais restritiva.
+4) O que está acontecendo?: 2 a 4 frases simples, para o cliente entender o contexto.
+5) Os ativos ou direitos envolvidos, com código, fator e preço, em lista "- ", e um exemplo numérico se o material trouxer.
+6) Quais são as opções?: opções numeradas (1), 2), 3)...), cada uma em uma linha com a consequência. Inclua "não fazer nada" e seu efeito, se constar.
+7) Qualquer observação didática do material (ex.: sobre uma classe de ação) em uma ou duas frases.
+8) Atenção à tela: confusões comuns de cotação ou de sistema, se houver.
+9) Importante: lista "- " com restrições, riscos, irrevogabilidade, devolução de dinheiro etc.
+Se o material trouxer o caminho no sistema da EQI para aprovar, inclua uma linha "Como aprovar: ...".
+Não recomende compra, venda ou subscrição. Seja completo, mas enxuto (até ~330 palavras)."""
+
+
 class RedatorGemini:
     def __init__(self, api_key: str, modelos: list[str]):
         from google import genai
@@ -162,6 +181,23 @@ class RedatorGemini:
                 log.warning("Seleção de documentos: falha no modelo %s (%s)", modelo, getattr(e, "code", "?"))
             except Exception:
                 log.exception("Seleção de documentos: erro inesperado no modelo %s", modelo)
+        return None
+
+    def mensagem(self, fonte: str, empresa: str, assunto: str) -> str | None:
+        """Mensagem de WhatsApp montada a partir de uma ficha ou resumo. None se nenhum modelo respondeu."""
+        from google.genai import errors, types
+
+        config = types.GenerateContentConfig(system_instruction=PROMPT_MENSAGEM, temperature=0.2, max_output_tokens=2048)
+        conteudo = f"EMPRESA: {empresa}\nASSUNTO DO EVENTO: {assunto}\n\nMATERIAL:\n{fonte}"
+        for modelo in self._modelos:
+            try:
+                resp = self._client.models.generate_content(model=modelo, contents=conteudo, config=config)
+                if resp.text and resp.text.strip():
+                    return resp.text.strip()
+            except errors.APIError as e:
+                log.warning("Mensagem: falha no modelo %s (%s)", modelo, getattr(e, "code", "?"))
+            except Exception:
+                log.exception("Mensagem: erro inesperado no modelo %s", modelo)
         return None
 
     def redigir(self, pergunta: str, historico: list[dict], dados: dict, documentos: list[dict] | None = None) -> str | None:
@@ -228,6 +264,10 @@ class Mensagem(BaseModel):
 class Consulta(BaseModel):
     pergunta: str = Field(min_length=1, max_length=1000)
     historico: list[Mensagem] = Field(default_factory=list, max_length=40)
+
+
+class Detalhe(BaseModel):
+    protocolo: str = Field(min_length=1, max_length=120)
 
 
 class Login(BaseModel):
@@ -302,6 +342,35 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
         with eventos.conectar() as con:
             banco = eventos.status(con)
         return {"status": "ok", "ia_configurada": redator is not None, **banco}
+
+    cache_mensagens: dict = {}
+
+    @app.post("/detalhar", dependencies=[Depends(exigir_login)])
+    def detalhar(dados: Detalhe, request: Request):
+        """Mensagem pronta para WhatsApp de um evento: usa a ficha da EQI (se houver) ou o resumo do comunicado."""
+        if not limite_consulta.permitir(_ip(request)):
+            raise HTTPException(429, "Muitas solicitações em sequência. Aguarde um minuto.")
+        with eventos.conectar() as con:
+            r = con.execute("SELECT empresa, assunto, resumo FROM fatos WHERE protocolo = ?", (dados.protocolo,)).fetchone()
+        if not r:
+            raise HTTPException(404, "Evento não encontrado.")
+        empresa, assunto = (r["empresa"] or "").strip(), (r["assunto"] or "").strip()
+        fichas = conhecimento.buscar_do_evento(empresa, assunto, hoje=hoje())
+        if fichas:
+            fonte, origem = fichas[0].texto, "ficha"
+        elif r["resumo"]:
+            fonte, origem = r["resumo"], "resumo"
+        else:
+            return {"mensagem": None, "origem": None}
+        chave = (dados.protocolo, hash(fonte))
+        if chave not in cache_mensagens:
+            texto = redator.mensagem(fonte, empresa, assunto) if redator else None
+            if not texto:
+                return {"mensagem": fonte, "origem": origem, "sem_ia": True}  # não guarda: tenta de novo na próxima vez
+            if len(cache_mensagens) >= 200:
+                cache_mensagens.pop(next(iter(cache_mensagens)))
+            cache_mensagens[chave] = texto
+        return {"mensagem": cache_mensagens[chave], "origem": origem}
 
     @app.post("/consultar", dependencies=[Depends(exigir_login)])
     def consultar(dados: Consulta, request: Request):

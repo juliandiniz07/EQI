@@ -161,3 +161,43 @@ def test_anexa_documentos_quando_a_pergunta_e_especifica(cliente, monkeypatch):
     r = cliente.post("/consultar", json={"pergunta": "qual o prazo da Gerdau?"}, headers=entrar(cliente)).json()
     assert r["resposta"] == "resposta" and recebidos["docs"]
     assert "instrucao_resposta_direta" in recebidos["dados"] and recebidos["dados"]["documentos_anexados"]
+
+
+def test_detalhar_monta_mensagem_com_a_ficha(banco, monkeypatch):
+    import eventos
+
+    monkeypatch.setenv("APP_SENHA", "segredo-teste")
+    monkeypatch.setenv("SECRET_KEY", "k")
+
+    class R(RedatorFalso):
+        def mensagem(self, fonte, empresa, assunto):
+            self.chamadas.append((fonte, empresa, assunto))
+            return "Mensagem pronta"
+
+    red = R()
+    c = TestClient(api.criar_app(redator=red, hoje=lambda: HOJE))
+    h = entrar(c)
+    with eventos.conectar() as con:
+        proto, = con.execute("SELECT protocolo FROM fatos WHERE empresa LIKE 'LIGHT%' LIMIT 1").fetchone()
+        con.execute("UPDATE fatos SET resumo='Resumo da Light' WHERE protocolo=?", (proto,))
+        con.commit()
+    r = c.post("/detalhar", json={"protocolo": proto}, headers=h).json()
+    assert r == {"mensagem": "Mensagem pronta", "origem": "resumo"}
+    c.post("/detalhar", json={"protocolo": proto}, headers=h)
+    assert len(red.chamadas) == 1  # segunda abertura vem do cache
+
+
+def test_detalhar_sem_material_e_sem_ia(banco, monkeypatch):
+    import eventos
+
+    monkeypatch.setenv("APP_SENHA", "segredo-teste")
+    monkeypatch.setenv("SECRET_KEY", "k")
+    c = TestClient(api.criar_app(redator=RedatorFalso(), hoje=lambda: HOJE))
+    h = entrar(c)
+    with eventos.conectar() as con:
+        proto, = con.execute("SELECT protocolo FROM fatos LIMIT 1").fetchone()
+        con.execute("UPDATE fatos SET resumo=NULL WHERE protocolo=?", (proto,))
+        con.commit()
+    assert c.post("/detalhar", json={"protocolo": proto}, headers=h).json()["mensagem"] is None
+    assert c.post("/detalhar", json={"protocolo": "nao-existe"}, headers=h).status_code == 404
+    assert c.post("/detalhar", json={"protocolo": proto}).status_code == 401

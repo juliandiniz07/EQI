@@ -149,6 +149,16 @@
   .detalhe ul { margin: 0 0 6px; padding-left: 18px; }
   .detalhe li { margin-bottom: 3px; }
   .detalhe .sem-resumo { color: var(--muted); }
+  .detalhe .mensagem {
+    white-space: pre-wrap; background: #0e1626; border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; font-size: 13.5px; line-height: 1.6; color: #e6ebf5; margin-bottom: 8px; overflow-wrap: anywhere;
+  }
+  .detalhe .carregando { color: var(--muted); font-size: 13px; }
+  .btn-copiar {
+    font-size: 12.5px; font-weight: 600; color: var(--bg); background: var(--green); border: 0;
+    padding: 6px 12px; border-radius: 8px; cursor: pointer; margin-right: 8px;
+  }
+  .btn-copiar:hover { filter: brightness(1.08); }
   .detalhe .acoes { margin-top: 8px; }
   .ver-todos { align-self: flex-start; background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 4px 10px; font-size: 12px; cursor: pointer; }
   .ver-todos:hover { color: var(--green); border-color: var(--green); }
@@ -396,9 +406,6 @@ function elCard(ev) {
   const badges = `<span class="badge" data-tipo="${escapar(ev.tipo_evento || "")}">${escapar(ev.tipo_evento_rotulo || "Evento")}</span>`;
   const link = linkSeguro(ev.link);
   const botaoPdf = link ? `<a class="btn-pdf" href="${escapar(link)}" target="_blank" rel="noopener noreferrer">Abrir PDF</a>` : "";
-  const detalhe = ev.resumo
-    ? formatarResumo(ev.resumo)
-    : `<p class="sem-resumo">O resumo deste documento ainda não está disponível. Abra o PDF para ver os detalhes.</p>`;
   const empresa = String(ev.empresa || "").replace(/\s+S\.?\/?A\.?$/i, "");
   const assunto = ev.assunto || ev.tipo || ev.categoria || "";
   card.innerHTML = `
@@ -406,10 +413,42 @@ function elCard(ev) {
     <div class="texto"><span class="empresa">${escapar(empresa)}</span><span class="assunto">${escapar(assunto)}</span></div>
     <span class="data">${escapar((ev.data || "").slice(0, 5) + "/" + (ev.data || "").slice(8))}</span>
     <span class="chevron" aria-hidden="true">▼</span>
-    <div class="detalhe">${detalhe}<div class="acoes">${botaoPdf}</div></div>`;
+    <div class="detalhe"><div class="conteudo"></div><div class="acoes"><button type="button" class="btn-copiar" hidden>Copiar mensagem</button>${botaoPdf}</div></div>`;
+  const conteudo = card.querySelector(".conteudo");
+  const btnCopiar = card.querySelector(".btn-copiar");
+  let carregado = false, textoMensagem = "";
+  const resumoSimples = () => ev.resumo
+    ? formatarResumo(ev.resumo)
+    : `<p class="sem-resumo">O resumo deste documento ainda não está disponível. Abra o PDF para ver os detalhes.</p>`;
+  async function carregar() {
+    carregado = true;
+    conteudo.innerHTML = `<p class="carregando">Preparando a mensagem...</p>`;
+    try {
+      const r = await fetch(API_URL + "/detalhar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + sessao.token },
+        body: JSON.stringify({ protocolo: ev.protocolo }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.mensagem) throw new Error("sem mensagem");
+      textoMensagem = d.mensagem;
+      conteudo.innerHTML = `<div class="mensagem">${escapar(textoMensagem)}</div>`;
+      btnCopiar.hidden = false;
+      if (d.sem_ia) carregado = false; // o texto veio sem a redação da IA: tenta de novo na próxima abertura
+    } catch {
+      carregado = false;
+      conteudo.innerHTML = resumoSimples();
+    }
+  }
+  btnCopiar.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(textoMensagem); btnCopiar.textContent = "Copiado"; }
+    catch { btnCopiar.textContent = "Selecione e copie o texto"; }
+    setTimeout(() => { btnCopiar.textContent = "Copiar mensagem"; }, 2000);
+  });
   const alternar = () => {
     const aberto = card.classList.toggle("aberto");
     card.setAttribute("aria-expanded", String(aberto));
+    if (aberto && !carregado) carregar();
   };
   card.addEventListener("click", (e) => { if (!e.target.closest("a, .detalhe")) alternar(); });
   card.addEventListener("keydown", (e) => {

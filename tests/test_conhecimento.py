@@ -47,3 +47,16 @@ def test_contexto_traz_instrucao_e_texto(tmp_path):
 def test_ficha_real_da_raizen_carrega():
     f = conhecimento.buscar("qual o prazo da subscrição de Raízen", hoje=date(2026, 11, 12))
     assert f and "08/12/2026" in f[0].texto
+
+
+def test_ficha_so_vale_para_o_assunto_declarado(tmp_path):
+    p = pasta(tmp_path, FICHA.replace("validade:", "assunto: aumento de capital, subscricao\nvalidade:"))
+    hoje = date(2026, 11, 12)
+    assert conhecimento.buscar_do_evento("RAIZEN", "Aumento de Capital Privado, Instituição do Programa de Units", hoje, p)
+    assert conhecimento.buscar_do_evento("RAIZEN", "Venda de Participação na Logum Logística S.A.", hoje, p) == []
+
+
+def test_ficha_real_da_raizen_nao_vale_para_logum():
+    hoje = date(2026, 11, 12)
+    assert conhecimento.buscar_do_evento("RAIZEN", "Aumento de Capital Privado, Instituição do Programa de Units", hoje)
+    assert conhecimento.buscar_do_evento("RAIZEN", "Venda de Participação na Logum Logística S.A.", hoje) == []

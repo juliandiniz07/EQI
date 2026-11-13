@@ -1,6 +1,7 @@
 ---
 empresa: Raízen
 termos: raizen, raiz55, raiz1, raiz14, raiz16, raiz4
+assunto: aumento de capital, subscricao, direito de preferencia, emissao de acoes
 validade: 2026-12-08
 ---
 Fato Relevante | Raízen (RAIZ55) – Aumento de Capital Privado
