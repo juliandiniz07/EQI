@@ -18,6 +18,25 @@ Data limite para adesão: 13/11/2026, até às 15h00.
 Data limite para solicitar recall (posição doada): 09/11/2026.
 
 
+Orientação
+
+A orientação é participar da OPA. Quem não aderir corre o risco de ficar com um papel de pouca liquidez: depois do leilão restam menos de 15% das ações ordinárias em circulação, e se a adesão for alta a negociação de RAPT3 pode ficar muito reduzida ou praticamente desaparecer.
+
+A adesão no leilão vai até 13/11/2026, às 15h00. Depois disso, ainda é possível trocar na mesma relação de troca até 16/12/2026, pedindo diretamente ao escriturador (Itaú Corretora: 3003-9285 ou 0800-720-9285).
+
+Avalie o suitability e a situação de cada cliente. Lembre que a operação é tratada como venda a R$ 8,52 por ação e pode gerar imposto sobre ganho de capital, e que o valor final depende da cotação de FRAS3.
+
+ 
+
+Sobre os códigos
+
+RAPT3: ações ordinárias da Randoncorp, que são as ações da oferta.
+RAPT4: ações preferenciais da Randoncorp. Não fazem parte da oferta e continuam sendo negociadas normalmente.
+FRAS3: ações da Frasle Mobility, que o acionista recebe na troca (2,7 RAPT3 por 1 FRAS3).
+RAPT3L: código do leilão na B3, em 16/11/2026, às 15h00.
+
+ 
+
 Contexto
 
 A Randoncorp S.A. (RAPT3) informou ao mercado que a CVM registrou, em 23/10/2026, a Oferta Pública de Aquisição de Ações (OPA) facultativa lançada pela DRAMD Participações e Administração Ltda., holding da família Randon e acionista controladora da companhia.
