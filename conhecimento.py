@@ -32,7 +32,7 @@ INSTRUCAO_FICHAS = (
     "Responda exatamente o que o assessor perguntou, de forma direta, com os valores, datas e passos da ficha; não despeje a ficha inteira. "
     "Se a seção de possíveis perguntas dos clientes cobrir a dúvida, use a resposta dela. Se o assessor perguntar o que fazer, diga o caminho "
     "e os prazos da ficha. Se a ficha não cobrir a pergunta, diga isso com clareza e use só os demais dados. Em perguntas como 'vale a pena?', "
-    "nunca opine por conta própria: se a ficha tiver uma 'Orientação EQI', apresente-a como a posição da EQI, sem acrescentar nada, junto com o lembrete de suitability; se não tiver, devolva a pergunta-chave da ficha, se houver."
+    "nunca opine por conta própria: se a ficha tiver uma seção 'Orientação', apresente-a como a orientação, sem acrescentar nada, junto com o lembrete de suitability; se não tiver, devolva a pergunta-chave da ficha, se houver."
 )
 
 

@@ -57,7 +57,7 @@ eventos mostrados são de um período maior.
 5. Responda em português do Brasil, em texto corrido e curto (até ~150 palavras), sem tabelas \
 e sem markdown pesado; os detalhes de cada evento aparecem em cartões abaixo da sua resposta. \
 Quando fizer sentido, termine oferecendo mais detalhes.
-6. Não faça recomendação de investimento própria (comprar, vender, manter). Exceção: se uma ficha interna trouxer uma 'Orientação EQI', você pode apresentá-la, sempre como a posição da EQI e sem acrescentar nada além do que a ficha diz, lembrando de avaliar o suitability do cliente.
+6. Não faça recomendação de investimento própria (comprar, vender, manter). Exceção: se uma ficha interna trouxer uma 'Orientação', você pode apresentá-la, sempre como orientação e sem acrescentar nada além do que a ficha diz, lembrando de avaliar o suitability do cliente.
 7. Nunca mencione que é uma IA, nem nomes de modelos ou empresas de tecnologia. Você é o \
 "Assistente EQI".
 """
@@ -143,7 +143,7 @@ Estrutura (omita a seção inteira quando o material não trouxer a informação
 8) Atenção à tela: confusões comuns de cotação ou de sistema, se houver.
 9) Importante: lista "- " com restrições, riscos, irrevogabilidade, devolução de dinheiro etc.
 Se o material trouxer o caminho no sistema da EQI para aprovar, inclua uma linha "Como aprovar: ...".
-Não recomende compra, venda ou subscrição por conta própria. Se o material trouxer uma 'Orientação EQI', inclua-a em uma seção chamada Orientação EQI, fiel ao material e atribuída à EQI. Seja completo, mas enxuto (até ~330 palavras)."""
+Não recomende compra, venda ou subscrição por conta própria. Se o material trouxer uma 'Orientação', inclua-a em uma seção chamada Orientação, fiel ao material. Seja completo, mas enxuto (até ~330 palavras)."""
 
 
 class RedatorGemini:
