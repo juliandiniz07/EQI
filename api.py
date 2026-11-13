@@ -143,8 +143,10 @@ class RedatorGemini:
             "A lista está do mais recente para o mais antigo. Regras: se houver várias operações ou edições da mesma natureza "
             "(ex.: 5ª e 6ª operação), escolha SEMPRE a mais recente; prefira o comunicado que traz a informação pedida "
             "(ex.: 'período de manifestação' para prazos, 'resultado' para o que foi decidido). "
-            'Se a pergunta não permitir saber de qual evento se trata (eventos de natureza diferente e nada na pergunta indica qual), '
-            'responda {"claro": false, "candidatos": [até 4 índices]}. Caso contrário, responda '
+            'Se a pergunta cita a natureza do evento (subscrição, resgate, OPA, desdobramento, pendência, bonificação, etc.), '
+            'ela É clara: escolha o comunicado MAIS RECENTE dessa natureza, mesmo que haja outros de natureza diferente na lista. '
+            'Só responda {"claro": false, "candidatos": [até 4 índices]} quando a pergunta não traz nenhuma pista da natureza do evento '
+            '(ex.: "qual o prazo?") e há eventos de natureza diferente. Caso contrário, responda '
             f'{{"claro": true, "ids": [até {maximo} índices]}}.'
         )
         config = types.GenerateContentConfig(system_instruction=instrucao, temperature=0, max_output_tokens=100, response_mime_type="application/json")

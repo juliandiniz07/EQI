@@ -160,12 +160,23 @@ def documentos_para_pergunta(redator, pergunta: str, lista: list[dict], max_docs
 
 INSTRUCAO_AMBIGUA = (
     "Não ficou claro de qual evento o assessor está falando. NÃO responda com dados de um deles e NÃO chute. Faça uma pergunta curta "
-    "de esclarecimento, listando em 'eventos_possiveis' (no máximo 4, cada um com data e assunto resumido) e peça que ele indique "
-    "qual é, por exemplo pela data ou pelo nome da operação."
+    "de esclarecimento e descreva cada item de 'eventos_possiveis' em UMA frase própria, em linguagem simples, dizendo do que se trata "
+    "(use o campo 'do_que_se_trata'; ex.: 'Subscrição de ações, 6ª operação, com prazo de manifestação até X'). Numere as opções (1, 2, 3) "
+    "para ele responder só com o número. NUNCA mande o assessor abrir PDF ou documento, nem cite nome de arquivo ou link como opção."
 )
+
+
+def _do_que_se_trata(e: dict) -> str:
+    base = (e.get("resumo") or "").strip().replace("\n", " ")
+    return base[:300] if base else (e.get("rotulo") or e.get("categoria") or "")
 
 
 def contexto_documentos(docs: list[dict], duvidas: list[dict] | None = None) -> dict:
     if duvidas:
-        return {"eventos_possiveis": [f"{e['data']}: {e['assunto'][:120]}" for e in duvidas], "instrucao_resposta_direta": INSTRUCAO_AMBIGUA}
+        return {
+            "eventos_possiveis": [
+                {"data": e["data"], "assunto": e["assunto"][:120], "do_que_se_trata": _do_que_se_trata(e)} for e in duvidas
+            ],
+            "instrucao_resposta_direta": INSTRUCAO_AMBIGUA,
+        }
     return {"documentos_anexados": [d["rotulo"] for d in docs], "instrucao_resposta_direta": INSTRUCAO_DOCUMENTOS}
