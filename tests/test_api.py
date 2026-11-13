@@ -201,3 +201,7 @@ def test_detalhar_sem_material_e_sem_ia(banco, monkeypatch):
     assert c.post("/detalhar", json={"protocolo": proto}, headers=h).json()["mensagem"] is None
     assert c.post("/detalhar", json={"protocolo": "nao-existe"}, headers=h).status_code == 404
     assert c.post("/detalhar", json={"protocolo": proto}).status_code == 401
+
+
+def test_prompt_proibe_saudacao_repetida():
+    assert "Não cumprimente" in api.SYSTEM_PROMPT and "Olá" in api.SYSTEM_PROMPT
