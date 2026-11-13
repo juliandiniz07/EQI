@@ -73,21 +73,18 @@ def _extrair(r: httpx.Response, link: str) -> tuple[str, bytes | str] | None:
 def baixar(client: httpx.Client, link: str) -> tuple[str, bytes | str] | None:
     """('pdf', bytes) | ('texto', str) | None se não foi possível obter.
 
-    A CVM às vezes devolve corpo vazio ou uma página de sessão a clientes sem cookie. Nesse caso o robô faz o que o navegador faz:
-    abre a página inicial do RAD para receber o cookie e pede de novo, com a origem indicada e, por fim, pelo caminho alternativo."""
+    A CVM costuma recusar o primeiro pedido de uma sessão nova (corpo vazio ou página de 4 KB) e entregar o PDF nos seguintes.
+    Por isso o robô repete o pedido na mesma sessão, com uma pausa curta, antes de desistir."""
     ultimo = None
     variantes = [link]
     alternativo = link.replace("/ENETWeb/", "/ENET/") if "/ENETWeb/" in link else link.replace("/ENET/", "/ENETWeb/")
     if alternativo != link:
         variantes.append(alternativo)
-    for i, url in enumerate(variantes):
-        for tentativa in (1, 2):
-            if i or tentativa == 2:
-                try:
-                    client.get(url.split("/frmDownloadDocumento")[0] + "/")  # cookie de sessão
-                except httpx.HTTPError:
-                    pass
-            r = client.get(url, headers={"Referer": url.split("/frmDownloadDocumento")[0] + "/", "Accept": "*/*"})
+    for url in variantes:
+        for tentativa in range(1, 4):
+            if tentativa > 1:
+                time.sleep(1.5)
+            r = client.get(url)
             r.raise_for_status()
             doc = _extrair(r, url)
             if doc:
