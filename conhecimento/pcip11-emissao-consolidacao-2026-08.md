@@ -13,6 +13,31 @@ Data da divulgação: 27/08/2026
 
  
 
+RPRI11 | RBRR11 | VCJR11 → PCIP11 – Ação necessária: informe seu preço médio
+
+🗓️ Prazo: de 10/11 até 30/11/2026
+
+O que está acontecendo?
+Os fundos RPRI11, RBRR11 e VCJR11, do Pátria, estão sendo incorporados ao PCIP11. Eles serão encerrados, e o cotista vai receber cotas do PCIP11 (e, se houver, uma parte em dinheiro).
+
+🔒 As cotas desses três fundos estão bloqueadas para negociação desde 05/11.
+
+❗ Por que é preciso informar o preço médio?
+No encerramento dos fundos, haverá desconto de 20% de IR sobre o lucro (diferença entre o valor recebido e o que o cotista pagou nas cotas).
+
+Se o cotista não informar o preço médio, a administradora pode usar o menor preço histórico do fundo. Isso pode fazer o cotista pagar mais imposto do que deveria.
+Exemplo: no RBRR11, seria usado R$ 60,82 por cota.
+
+📲 Como informar (um envio para cada fundo):
+
+- RPRI11 e VCJR11: procure no e-mail (o cadastrado na B3) a mensagem de contact@cuoreplatform.com. Clique no link, preencha e finalize o formulário de cada fundo.
+- RBRR11: acesse o Portal do Investidor do BTG Pactual → "Custo médio de aquisição" → escolha o fundo → informe o perfil tributário e o preço médio por cota → conclua o envio.
+🔗 https://portaldoinvestidor.btgpactual.com/login
+
+ℹ️ Se sobrar fração de cota do PCIP11, ela será vendida em leilão e o valor será depositado para o cotista. O IR sobre esse valor fica por conta do cotista.
+
+ 
+
 1. 💰 PCIP11 – 9ª Emissão de Cotas
 O PCIP11 aprovou sua 9ª emissão de cotas, com captação de até aproximadamente R$ 4 bilhões.
 
