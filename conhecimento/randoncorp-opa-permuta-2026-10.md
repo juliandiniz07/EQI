@@ -12,6 +12,12 @@ Data da divulgação: 23/10/2026
 Oferta disponível no Access
 Access → Produtos → Renda Variável → Eventos Voluntários
 
+ 
+
+Passo a passo do cliente
+
+Acesse o App EQI Investimentos → Investir → Renda Variável → Mais Opções → Eventos Voluntários
+
 
 Data limite para adesão: 13/11/2026, até às 15h00.
 
