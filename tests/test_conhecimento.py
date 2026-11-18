@@ -83,3 +83,9 @@ def test_contexto_de_vencida_manda_dizer_que_acabou(tmp_path):
     ctx = conhecimento.contexto_vencidas(conhecimento.buscar_vencidas("Raízen", hoje=depois, pasta=pasta(tmp_path)), depois)
     assert "prazo encerrado em 08/12/2026" in ctx["evento_encerrado"][0]
     assert "o prazo acabou" in ctx["instrucao_resposta_direta"] and "NUNCA trate o evento como aberto" in ctx["instrucao_resposta_direta"]
+
+
+def test_instrucao_proibe_aviso_generico_de_suitability():
+    ins = conhecimento.INSTRUCAO_FICHAS
+    assert "NÃO encerre a resposta com aviso genérico" in ins and "suitability" in ins
+    assert "complete com o lembrete de suitability" not in ins
