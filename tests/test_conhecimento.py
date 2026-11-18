@@ -66,3 +66,20 @@ def test_instrucao_cobre_recomendacao_e_orientacao():
     ins = conhecimento.INSTRUCAO_FICHAS.lower()
     for palavra in ("recomendação", "orientação", "devo vender", "vale a pena", "o que fazer"):
         assert palavra in ins
+
+
+def test_ficha_vencida_e_achada_por_buscar_vencidas(tmp_path):
+    p = pasta(tmp_path)
+    depois = date(2026, 12, 9)  # a ficha vale até 2026-12-08
+    assert conhecimento.buscar("Raízen", hoje=depois, pasta=p) == []
+    vencidas = conhecimento.buscar_vencidas("Raízen", hoje=depois, pasta=p)
+    assert len(vencidas) == 1 and vencidas[0].vencida(depois)
+    # e o contrário: enquanto vale, não aparece como vencida
+    assert conhecimento.buscar_vencidas("Raízen", hoje=date(2026, 11, 17), pasta=p) == []
+
+
+def test_contexto_de_vencida_manda_dizer_que_acabou(tmp_path):
+    depois = date(2026, 12, 9)
+    ctx = conhecimento.contexto_vencidas(conhecimento.buscar_vencidas("Raízen", hoje=depois, pasta=pasta(tmp_path)), depois)
+    assert "prazo encerrado em 08/12/2026" in ctx["evento_encerrado"][0]
+    assert "o prazo acabou" in ctx["instrucao_resposta_direta"] and "NUNCA trate o evento como aberto" in ctx["instrucao_resposta_direta"]

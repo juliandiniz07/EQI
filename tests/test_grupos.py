@@ -216,3 +216,14 @@ def test_resposta_de_colega_cancela_a_resposta(montar):
     _, mA = robo.receber(msg("quando termina a venda do INBR32?", mid="a2", quem="5511A"))
     robo.receber(msg("ja respondi ele: o prazo vai ate 17/11", mid="b2", quem="5511B"))
     assert robo.processar(mA) == "humano"
+
+
+def test_evento_encerrado_e_respondido_dizendo_que_acabou(montar, monkeypatch, tmp_path):
+    (tmp_path / "x.md").write_text(
+        "---\nempresa: Randoncorp\ntermos: randoncorp, rapt3\nvalidade: 2026-01-10\n---\nTroca de RAPT3 por FRAS3.\n", encoding="utf-8")
+    monkeypatch.setattr("conhecimento.PASTA", tmp_path)
+    robo, _ = montar(classificador=SemIA())
+    robo.redator = None
+    assert robo._relevante("qual o prazo para trocar RAPT3?", [])[0] is True  # não cala por estar vencida
+    resposta, _, camada = robo._montar_resposta("qual o prazo para trocar RAPT3?", [])
+    assert "10/01/2026" in resposta and "encerrou" in resposta and camada.endswith("vencida-sem-ia")

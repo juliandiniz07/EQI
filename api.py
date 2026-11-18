@@ -408,9 +408,12 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
 
         documentos, duvidas = [], None
         fichas = conhecimento.buscar(dados.pergunta, historico, hoje=hoje())
+        vencidas = conhecimento.buscar_vencidas(dados.pergunta, historico, hoje=hoje()) if not fichas else []
         if fichas:
             contexto.update(conhecimento.contexto(fichas))
-        if redator and not fichas and atendimento.pergunta_especifica(dados.pergunta):
+        elif vencidas:
+            contexto.update(conhecimento.contexto_vencidas(vencidas, hoje()))
+        if redator and not fichas and not vencidas and atendimento.pergunta_especifica(dados.pergunta):
             documentos, duvidas = atendimento.documentos_para_pergunta(redator, dados.pergunta, encontrados)
             if documentos or duvidas:
                 contexto.update(atendimento.contexto_documentos(documentos, duvidas))

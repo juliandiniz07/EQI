@@ -226,7 +226,9 @@ class RoboDeGrupos:
     def _no_assunto(self, texto: str) -> tuple[bool, bool]:
         """(tem tema de evento, aponta para um ativo nosso) — o ativo é um ticker ou uma empresa com ficha."""
         norm = eventos.termo(texto)
-        return bool(_RE_TEMA.search(norm)), bool(_RE_TICKER.search(norm)) or bool(conhecimento.buscar(texto, hoje=self.hoje()))
+        hoje = self.hoje()
+        tem_ficha = bool(conhecimento.buscar(texto, hoje=hoje) or conhecimento.buscar_vencidas(texto, hoje=hoje))
+        return bool(_RE_TEMA.search(norm)), bool(_RE_TICKER.search(norm)) or tem_ficha
 
     def _relevante(self, texto: str, contexto: list[str]) -> tuple[bool, str]:
         norm = eventos.termo(texto)
@@ -273,9 +275,12 @@ class RoboDeGrupos:
             dados["ticker_da_empresa"] = it.ticker
         documentos = []
         fichas = conhecimento.buscar(texto, historico, hoje=self.hoje())
+        vencidas = conhecimento.buscar_vencidas(texto, historico, hoje=self.hoje()) if not fichas else []
         if fichas:
             dados.update(conhecimento.contexto(fichas))
-        if self.redator and not fichas and atendimento.pergunta_especifica(texto):
+        elif vencidas:
+            dados.update(conhecimento.contexto_vencidas(vencidas, self.hoje()))
+        if self.redator and not fichas and not vencidas and atendimento.pergunta_especifica(texto):
             documentos, duvidas = atendimento.documentos_para_pergunta(self.redator, texto, achados)
             if documentos or duvidas:
                 dados.update(atendimento.contexto_documentos(documentos, duvidas))
@@ -286,7 +291,12 @@ class RoboDeGrupos:
         camada = "ia"
         if not resp:
             resp, camada = self.resposta_sem_ia(it, mostrados, len(achados), ampliado), "regra"
-            if fichas and not mostrados:  # há material interno; seria errado dizer que não encontramos nada
+            if vencidas and not mostrados:
+                f = vencidas[0]
+                resp = (f"O prazo de {f.empresa} se encerrou em {f.validade.strftime('%d/%m/%Y')}. "
+                        "Tenho o material aqui, mas não consegui redigir os detalhes agora.")
+                camada = "regra/vencida-sem-ia"
+            elif fichas and not mostrados:  # há material interno; seria errado dizer que não encontramos nada
                 resp = (f"Tenho o material de {fichas[0].empresa} aqui, mas não consegui redigir a resposta agora. "
                         "Tente de novo em alguns instantes ou consulte o assistente no navegador.")
                 camada = "regra/ficha-sem-ia"

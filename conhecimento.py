@@ -44,6 +44,9 @@ class Ficha:
     validade: date | None
     texto: str
 
+    def vencida(self, hoje: date) -> bool:
+        return bool(self.validade and self.validade < hoje)
+
 
 def _ler(caminho: Path) -> Ficha | None:
     bruto = caminho.read_text(encoding="utf-8-sig")
@@ -71,7 +74,8 @@ def _ler(caminho: Path) -> Ficha | None:
     return Ficha(caminho.name, meta.get("empresa", caminho.stem), termos, assuntos, validade, corpo.strip()[:MAX_CHARS])
 
 
-def carregar(pasta: Path = PASTA) -> list[Ficha]:
+def carregar(pasta: Path | None = None) -> list[Ficha]:
+    pasta = pasta or PASTA  # resolvido na chamada: assim dá para apontar para outra pasta
     fichas = []
     if not pasta.is_dir():
         return fichas
@@ -88,18 +92,16 @@ def carregar(pasta: Path = PASTA) -> list[Ficha]:
     return fichas
 
 
-def buscar(pergunta: str, historico: list[dict] | None = None, hoje: date | None = None, pasta: Path = PASTA) -> list[Ficha]:
-    """Fichas válidas que a pergunta (ou a pergunta anterior do assessor) cita."""
-    hoje = hoje or date.today()
+def _casam(pergunta: str, historico: list[dict] | None, pasta: Path | None, vencida: bool, hoje: date) -> list[Ficha]:
     textos = [pergunta]
     anteriores = [m["content"] for m in (historico or []) if m.get("role") == "user" and m.get("content")]
     if anteriores:
         textos.append(anteriores[-1])
-    achadas = []
+    achadas: list[Ficha] = []
     for t in textos:  # a pergunta atual vem primeiro; o histórico só completa
         norm = f" {eventos.termo(t)} "
         for f in carregar(pasta):
-            if f in achadas or (f.validade and f.validade < hoje):
+            if f in achadas or f.vencida(hoje) != vencida:
                 continue
             if any(f" {termo} " in norm for termo in f.termos):
                 achadas.append(f)
@@ -108,11 +110,41 @@ def buscar(pergunta: str, historico: list[dict] | None = None, hoje: date | None
     return achadas[:MAX_FICHAS]
 
 
+def buscar(pergunta: str, historico: list[dict] | None = None, hoje: date | None = None, pasta: Path | None = None) -> list[Ficha]:
+    """Fichas válidas que a pergunta (ou a pergunta anterior do assessor) cita."""
+    hoje = hoje or date.today()
+    return _casam(pergunta, historico, pasta, vencida=False, hoje=hoje)
+
+
+def buscar_vencidas(pergunta: str, historico: list[dict] | None = None, hoje: date | None = None, pasta: Path | None = None) -> list[Ficha]:
+    """Fichas que a pergunta cita mas cujo prazo já passou — para dizer que acabou, em vez de calar."""
+    hoje = hoje or date.today()
+    return _casam(pergunta, historico, pasta, vencida=True, hoje=hoje)
+
+
+INSTRUCAO_VENCIDA = (
+    "O bloco 'evento_encerrado' é material de um evento cujo PRAZO JÁ PASSOU. Comece a resposta dizendo claramente que "
+    "o prazo acabou e até que data ele era, com a data exata da ficha. Depois, se a ficha disser o que ainda é possível "
+    "fazer depois do prazo, diga; se não disser, diga que não há mais ação a fazer e ofereça o que a ficha explica sobre "
+    "o que aconteceu. NUNCA trate o evento como aberto nem convide o assessor a aderir, votar ou reservar."
+)
+
+
+def contexto_vencidas(fichas: list[Ficha], hoje: date | None = None) -> dict:
+    hoje = hoje or date.today()
+    return {
+        "evento_encerrado": [
+            f"{f.empresa} (prazo encerrado em {f.validade.strftime('%d/%m/%Y')})\n{f.texto}" for f in fichas if f.validade
+        ],
+        "instrucao_resposta_direta": INSTRUCAO_VENCIDA,
+    }
+
+
 def contexto(fichas: list[Ficha]) -> dict:
     return {"fichas_internas_eqi": [f"{f.empresa}\n{f.texto}" for f in fichas], "instrucao_fichas": INSTRUCAO_FICHAS}
 
 
-def buscar_do_evento(empresa: str, assunto: str, hoje: date | None = None, pasta: Path = PASTA) -> list[Ficha]:
+def buscar_do_evento(empresa: str, assunto: str, hoje: date | None = None, pasta: Path | None = None) -> list[Ficha]:
     """Fichas válidas para UM evento: a empresa bate e, se a ficha declara 'assunto', o título do evento tem algum desses termos."""
     norm = f" {eventos.termo(assunto)} "
     return [f for f in buscar(empresa, hoje=hoje, pasta=pasta) if not f.assuntos or any(a in norm for a in f.assuntos)]
