@@ -1,11 +1,11 @@
-# Troque pelo seu endereço (DuckDNS ou domínio próprio apontando para o IP da VPS).
-# O Caddy emite e renova o certificado HTTPS sozinho.
-SEU-ENDERECO.duckdns.org {
+# O endereço vem da variável ENDERECO do .env (ex.: eqi-eventos.duckdns.org).
+# O Caddy emite e renova o certificado HTTPS sozinho, sem nenhuma configuração extra.
+{$ENDERECO} {
 	encode gzip
 	header {
 		Strict-Transport-Security "max-age=31536000"
 		X-Content-Type-Options nosniff
 		Referrer-Policy no-referrer
 	}
-	reverse_proxy 127.0.0.1:8001
+	reverse_proxy api:8001
 }

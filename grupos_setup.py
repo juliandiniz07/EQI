@@ -59,17 +59,61 @@ def sair(msg: str) -> None:
     sys.exit(1)
 
 
-def _salvar_qr(dados: dict) -> bool:
-    """Guarda o QR Code como imagem. Devolve False se a resposta não trouxe QR (normalmente já está conectado)."""
-    qr = dados.get("qrcode") or dados.get("qr") or {}
-    b64 = (qr.get("base64") or "").split(",")[-1] if isinstance(qr, dict) else ""
-    if not b64:
+def _tem_qrcode() -> bool:
+    try:
+        import qrcode  # noqa: F401
+        return True
+    except ImportError:
         return False
-    ARQ_QR.write_bytes(base64.b64decode(b64))
-    print(f"QR Code salvo em: {ARQ_QR}")
-    print("Abra esse arquivo e leia o código no WhatsApp do chip do robô:")
-    print("  WhatsApp > Configurações > Dispositivos conectados > Conectar dispositivo")
+
+
+def _ascii_qr(texto: str) -> bool:
+    """Desenha o QR Code no próprio terminal — é o que salva num servidor sem tela."""
+    try:
+        import qrcode
+    except ImportError:
+        return False
+    q = qrcode.QRCode(border=1)
+    q.add_data(texto)
+    q.make(fit=True)
+    q.print_ascii(invert=True)
+    return True
+
+
+def _instrucoes() -> None:
+    print("\nNo celular do chip do robô: WhatsApp > Configurações > Dispositivos conectados > Conectar dispositivo.")
     print("O código expira em cerca de 40 segundos. Se expirar, rode de novo: python grupos_setup.py qr")
+
+
+def _salvar_qr(dados: dict) -> bool:
+    """Mostra o QR Code no terminal e salva como imagem. False se a resposta não trouxe QR (costuma ser já conectado)."""
+    qr = dados.get("qrcode") or dados.get("qr") or {}
+    if not isinstance(qr, dict):
+        qr = {}
+    pareamento = dados.get("pairingCode") or qr.get("pairingCode")
+    if pareamento:
+        print(f"\nCÓDIGO DE PAREAMENTO: {pareamento}")
+        print("No celular: WhatsApp > Dispositivos conectados > Conectar dispositivo > Conectar com número de telefone.")
+        return True
+    texto = dados.get("code") or qr.get("code") or ""
+    desenhou = _ascii_qr(texto) if texto else False
+    salvou = False
+    for bruto in (qr.get("base64"), dados.get("base64")):  # a resposta às vezes traz os dois; vale o que decodificar
+        if not bruto or salvou:
+            continue
+        try:
+            ARQ_QR.write_bytes(base64.b64decode(bruto.split(",")[-1], validate=False))
+            salvou = True
+        except Exception:
+            continue
+    if salvou:
+        print(f"Imagem do QR Code salva em: {ARQ_QR}")
+    if not desenhou and not salvou:
+        return False
+    if not desenhou:
+        falta = "o pacote 'qrcode' não está instalado" if not _tem_qrcode() else "a Evolution não devolveu o código em texto"
+        print(f"(Não dá para desenhar no terminal porque {falta}: use a imagem acima.)")
+    _instrucoes()
     return True
 
 
@@ -83,7 +127,11 @@ def cmd_criar(e: Evolution) -> None:
 
 
 def cmd_qr(e: Evolution) -> None:
-    if not _salvar_qr(e.chamar("GET", f"/instance/connect/{e.instancia}")):
+    # Com NUMERO_ROBO no ambiente, a Evolution devolve um código de 8 dígitos em vez do QR:
+    # é o caminho mais simples quando se está por SSH, sem tela.
+    numero = (os.getenv("NUMERO_ROBO") or "").strip().lstrip("+")
+    caminho = f"/instance/connect/{e.instancia}" + (f"?number={numero}" if numero else "")
+    if not _salvar_qr(e.chamar("GET", caminho)):
         print("Sem QR Code na resposta. Rode 'python grupos_setup.py status': pode já estar conectado.")
 
 
@@ -117,7 +165,10 @@ def cmd_webhook(e: Evolution) -> None:
              f"Use este valor, que acabei de sortear:\n\n  GRUPOS_WEBHOOK_SEGREDO={secrets.token_urlsafe(24)}\n")
     porta = os.getenv("PORT", "8001")
     # host.docker.internal: de dentro do contêiner, é como a Evolution enxerga este computador
-    destino = os.getenv("GRUPOS_WEBHOOK_URL", f"http://host.docker.internal:{porta}/evolution/webhook/{e.segredo}")
+    # No servidor (docker compose), a Evolution fala com o site pelo nome do serviço: http://api:8001
+    # No Windows, de dentro do contêiner, este computador é host.docker.internal.
+    padrao = f"http://api:{porta}" if os.getenv("EVOLUTION_URL", "").startswith("http://evolution") else f"http://host.docker.internal:{porta}"
+    destino = os.getenv("GRUPOS_WEBHOOK_URL", f"{padrao}/evolution/webhook/{e.segredo}")
     e.chamar("POST", f"/webhook/set/{e.instancia}", {"webhook": {
         "enabled": True, "url": destino, "webhookByEvents": False, "events": ["MESSAGES_UPSERT"],
     }})

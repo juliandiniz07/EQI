@@ -1,0 +1,13 @@
+.git
+.venv
+__pycache__
+*.pyc
+.pytest_cache
+fatos.db
+*.db
+.env
+qrcode.png
+cvm*.html
+diag_cvm.txt
+api_backup.py
+check.py

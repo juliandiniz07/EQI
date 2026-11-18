@@ -1,3 +1,6 @@
+> **Para subir o projeto inteiro numa VPS, use `deploy/VPS.md`**, que já inclui a Evolution.
+> Este arquivo serve para quem já tem a Evolution rodando em separado.
+
 # Colocando o robô nos grupos — passo a passo
 
 1. **Evolution rodando** (VPS): `docker compose -f evolution-compose.yml --env-file .env.evolution up -d`

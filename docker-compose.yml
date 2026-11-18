@@ -1,0 +1,99 @@
+# Assistente EQI completo numa VPS: site, agendador da coleta, Evolution (WhatsApp) e HTTPS automático.
+#
+#   cd ~/eqi && cp .env.example .env && nano .env     (preencha as chaves)
+#   docker compose up -d --build
+#
+# Só o Caddy fica exposto na internet (portas 80 e 443). Todo o resto conversa pela rede interna
+# do Docker: nem o site nem a Evolution têm porta aberta para fora.
+
+name: eqi
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      HOST: 0.0.0.0                       # dentro do contêiner; quem publica para fora é o Caddy
+      PORT: "8001"
+      DB_PATH: /dados/fatos.db
+      EVOLUTION_URL: http://evolution:8080
+    volumes:
+      - .:/app                           # o código entra por aqui: `git pull` atualiza sem reconstruir
+      - dados:/dados                       # banco de eventos, fora do código
+    depends_on: [evolution]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  coletor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    command: ["python", "scheduler.py"]   # coleta da CVM e resumos, nos horários do scheduler.py
+    env_file: [.env]
+    environment:
+      DB_PATH: /dados/fatos.db
+      EVOLUTION_URL: http://evolution:8080
+    volumes:
+      - .:/app
+      - dados:/dados
+
+  evolution:
+    image: evoapicloud/evolution-api:v2.3.7
+    restart: unless-stopped
+    environment:
+      SERVER_URL: http://evolution:8080
+      AUTHENTICATION_API_KEY: ${EVOLUTION_APIKEY}
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evo:${PG_SENHA}@postgres:5432/evolution
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://redis:6379/6
+      CACHE_LOCAL_ENABLED: "false"
+    volumes: [evo_instances:/evolution/instances]
+    depends_on: [postgres, redis]
+
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: evo
+      POSTGRES_PASSWORD: ${PG_SENHA}
+      POSTGRES_DB: evolution
+    volumes: [pg_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U evo"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes: [redis_data:/data]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      ENDERECO: ${ENDERECO}               # seu domínio ou DuckDNS; o Caddy emite o HTTPS sozinho
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api]
+
+volumes:
+  dados: {}
+  evo_instances: {}
+  pg_data: {}
+  redis_data: {}
+  caddy_data: {}
+  caddy_config: {}

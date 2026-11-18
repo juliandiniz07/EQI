@@ -7,3 +7,4 @@ google-genai>=1.0
 python-dotenv>=1.0
 tzdata
 pytest>=8
+qrcode>=7.4
