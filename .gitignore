@@ -5,3 +5,4 @@ __pycache__/
 .pytest_cache/
 *.db
 *.db-journal
+qrcode.png
