@@ -30,6 +30,7 @@ from consulta import Interpretador
 log = logging.getLogger("grupos")
 
 MAX_EVENTOS_GRUPO = 5
+TEMA_VALE_SEG = 15 * 60  # por quanto tempo "e o prazo?" ainda se refere ao que o robô respondeu
 DIAS_AMPLIACAO = 365
 
 # Termos que indicam, só por regra, que a mensagem pode tratar de evento corporativo.
@@ -123,12 +124,14 @@ class EnviadorEvolution:
     def __init__(self, cfg: Config):
         self._cfg = cfg
 
-    def enviar(self, grupo: str, texto: str) -> None:
+    def enviar(self, grupo: str, texto: str, citar: dict | None = None) -> None:
         c = self._cfg
+        corpo = {"number": grupo, "text": texto, "delay": 2000}
+        if citar:  # responde citando a pergunta, para ficar claro a quem o robô respondeu
+            corpo["quoted"] = citar
         r = httpx.post(
             f"{c.url}/message/sendText/{c.instancia}",
-            json={"number": grupo, "text": texto, "delay": 2000},
-            headers={"apikey": c.apikey}, timeout=30,
+            json=corpo, headers={"apikey": c.apikey}, timeout=30,
         )
         r.raise_for_status()
 
@@ -164,6 +167,7 @@ class RoboDeGrupos:
         self.limites = Limites()
         self._vistos: deque = deque(maxlen=2000)
         self._recentes: dict[str, deque] = defaultdict(lambda: deque(maxlen=8))  # (quando, quem, texto)
+        self._tema: dict[str, tuple[float, str]] = {}  # último assunto respondido por grupo: (quando, pergunta)
         self._lock = threading.Lock()
         self._criar_tabela()
 
@@ -203,8 +207,11 @@ class RoboDeGrupos:
                 return "ignorado:duplicada", None
             self._vistos.append(mid)
             anteriores = [f"{q}: {t}" for _, q, t in self._recentes[grupo]][-4:]
+            proprias = [t for _, q, t in self._recentes[grupo] if q == quem][-2:]
             self._recentes[grupo].append((time.monotonic(), quem, texto))
-        return "ok", {"destino": jid, "grupo": grupo, "quem": quem, "texto": texto, "contexto": anteriores, "mid": mid}
+        return "ok", {"destino": jid, "grupo": grupo, "quem": quem, "texto": texto,
+                      "contexto": anteriores, "proprias": proprias, "mid": mid,
+                      "citar": {"key": key, "message": msg}}
 
     # -- decisão e resposta -----------------------------------------------------------
 
@@ -230,8 +237,19 @@ class RoboDeGrupos:
         # IA indisponível: decide por regra, e aí o seguimento não basta (sem IA não dá para julgar o contexto).
         return bool(tema or (alvo and _RE_ACAO.search(norm))), "regra"
 
-    def _montar_resposta(self, texto: str, contexto: list[str]) -> tuple[str, list[dict], str]:
-        historico = [{"role": "user", "content": c} for c in contexto]
+    def _ancora(self, grupo: str, proprias: list[str], contexto: list[str]) -> list[str]:
+        """De que assunto a pergunta trata, quando ela não diz.
+
+        Primeiro o que ESSA pessoa perguntou antes: num grupo, quem faz um seguimento costuma estar continuando
+        a própria conversa. Na falta disso, o último tema que o robô respondeu ali. A ordem importa: a
+        interpretação herda do último item da lista."""
+        tema = self._tema.get(grupo)
+        recente = [tema[1]] if tema and time.monotonic() - tema[0] < TEMA_VALE_SEG else []
+        ancora = [t for t in recente if t not in proprias] + list(proprias)
+        return ancora or contexto
+
+    def _montar_resposta(self, texto: str, contexto: list[str], ancora: list[str] | None = None) -> tuple[str, list[dict], str]:
+        historico = [{"role": "user", "content": c} for c in (ancora if ancora is not None else contexto)]
         with eventos.conectar() as con:
             it = self.interp.interpretar(texto, historico, hoje=self.hoje(), nomes_no_banco=eventos.empresas_conhecidas(con))
             res = atendimento.buscar_para_pergunta(con, it)
@@ -282,11 +300,14 @@ class RoboDeGrupos:
             if alguem_respondeu:  # um colega já entrou na conversa: o robô não atropela
                 self._log(grupo, quem, texto, "ignorado:humano_respondeu", camada)
                 return "humano"
-        resposta, mostrados, camada_resp = self._montar_resposta(texto, m["contexto"])
+        ancora = self._ancora(grupo, m.get("proprias") or [], m["contexto"])
+        resposta, mostrados, camada_resp = self._montar_resposta(texto, m["contexto"], ancora)
+        with self._lock:
+            self._tema[grupo] = (time.monotonic(), texto)
         enviado = 0
         if self.cfg.modo == "ativo":
             try:
-                self.enviador.enviar(m["destino"], resposta)
+                self.enviador.enviar(m["destino"], resposta, m.get("citar"))
                 enviado = 1
             except Exception:
                 log.exception("Falha ao enviar resposta ao grupo")

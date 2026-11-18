@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -25,9 +27,11 @@ class Classificador:
 class Enviador:
     def __init__(self):
         self.enviadas = []
+        self.citadas = []
 
-    def enviar(self, grupo, texto):
+    def enviar(self, grupo, texto, citar=None):
         self.enviadas.append((grupo, texto))
+        self.citadas.append(citar)
 
 
 def msg(texto, grupo=GRUPO, quem="5511999990001", mid="m1", fromMe=False, **extra):
@@ -165,3 +169,33 @@ def test_seguimento_chega_ate_a_ia_mas_nao_passa_sozinho_na_regra(montar):
     robo, _ = montar(classificador=SemIA())
     assert robo._relevante(seguimento, ctx)[0] is False             # sem IA, o robô não arrisca
     assert robo._relevante("alguem viu o jogo ontem?", ctx)[0] is False
+
+
+def test_ancora_do_assunto_segue_o_que_o_robo_respondeu(montar):
+    robo, _ = montar()
+    # A pergunta de outra pessoa; o robô respondeu sobre ela; agora B faz um seguimento vago
+    robo._tema["g"] = (time.monotonic(), "quando sai o resgate do INBR32?")
+    ancora = robo._ancora("g", proprias=[], contexto=["carlos: alguem tem o contato da mesa?"])
+    assert ancora == ["quando sai o resgate do INBR32?"]  # e não a conversa solta que veio no meio
+
+
+def test_ancora_prefere_a_propria_conversa_do_assessor(montar):
+    """A perguntou sobre Raízen; o robô respondeu B sobre outra coisa; o seguimento de A continua Raízen."""
+    robo, _ = montar()
+    robo._tema["g"] = (time.monotonic(), "prazo da OPA da Randoncorp?")
+    ancora = robo._ancora("g", proprias=["subscrição de Raízen"], contexto=[])
+    assert ancora[-1] == "subscrição de Raízen"  # o último da lista é o que a interpretação herda
+
+
+def test_tema_antigo_nao_ancora_mais(montar):
+    robo, _ = montar()
+    robo._tema["g"] = (time.monotonic() - grupos.TEMA_VALE_SEG - 1, "prazo da OPA da Randoncorp?")
+    assert robo._ancora("g", proprias=[], contexto=["ana: bom dia"]) == ["ana: bom dia"]
+
+
+def test_resposta_cita_a_pergunta_no_grupo(montar):
+    robo, enviador = montar()
+    roda(robo, msg("teve alguma OPA recente?"))
+    assert enviador.enviadas, "deveria ter respondido"
+    citado = enviador.citadas[0]
+    assert citado["key"]["id"] and citado["message"]["conversation"] == "teve alguma OPA recente?"
