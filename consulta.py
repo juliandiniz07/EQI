@@ -30,7 +30,8 @@ _TIPOS_PERGUNTA = [
 _RE_FII = re.compile(r"\bfiis?\b|fundos? imobiliarios?|fundo de investimento imobiliario")
 _RE_TICKER = re.compile(r"\b([a-z]{4})(\d{1,2})\b")
 _RE_SEGUIMENTO = re.compile(
-    r"^(?:e|e a|e o|e da|e do|e de|e na|e no)\b|mais detalhes?|\bdetalh|sobre (?:isso|esse|essa|ele|ela)|\bdel[ae]s?\b|\bdess[ae]\b|\bdisso\b|\bnest[ae]\b"
+    r"^(?:e|e a|e o|e da|e do|e de|e na|e no|mas|entao|porem|ok|certo|entendi|ah|ta|tah)\b"
+    r"|mais detalhes?|\bdetalh|sobre (?:isso|esse|essa|ele|ela)|\bdel[ae]s?\b|\bdess[ae]\b|\bdisso\b|\bnest[ae]\b|\bnesse caso\b"
 )
 
 # Palavras que nunca devem ser tratadas como nome de empresa

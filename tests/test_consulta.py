@@ -118,3 +118,9 @@ def test_reconhece_codigos_das_fichas(interp):
              "o que fazer com PCIP11?": "Pátria Crédito Imobiliário"}
     for pergunta, esperado in casos.items():
         assert interp.interpretar(pergunta, hoje=HOJE).empresa == esperado, pergunta
+
+
+def test_seguimento_com_conectivo_herda_a_empresa(interp):
+    h = [{"role": "user", "content": "qual o prazo da subscrição de Raízen?"}]
+    for frase in ("Mas quando vence?", "Entao o cliente precisa pagar?", "Ok, e o prazo?"):
+        assert interp.interpretar(frase, h, hoje=HOJE).empresa == "Raízen", frase

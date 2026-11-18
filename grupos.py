@@ -208,18 +208,26 @@ class RoboDeGrupos:
 
     # -- decisão e resposta -----------------------------------------------------------
 
+    def _no_assunto(self, texto: str) -> tuple[bool, bool]:
+        """(tem tema de evento, aponta para um ativo nosso) — o ativo é um ticker ou uma empresa com ficha."""
+        norm = eventos.termo(texto)
+        return bool(_RE_TEMA.search(norm)), bool(_RE_TICKER.search(norm)) or bool(conhecimento.buscar(texto, hoje=self.hoje()))
+
     def _relevante(self, texto: str, contexto: list[str]) -> tuple[bool, str]:
         norm = eventos.termo(texto)
-        tema = bool(_RE_TEMA.search(norm))
-        # "alvo" = a mensagem aponta para um ativo nosso: um ticker, ou uma empresa que tem ficha interna
-        alvo = bool(_RE_TICKER.search(norm)) or bool(conhecimento.buscar(texto, hoje=self.hoje()))
-        if len(norm) < 8 or not (tema or alvo):
+        tema, alvo = self._no_assunto(texto)
+        # Seguimento: "mas quando cai na conta?" não cita nada, mas continua a pergunta anterior
+        seguimento = bool(
+            not (tema or alvo) and contexto and "?" in texto
+            and any(any(self._no_assunto(c)) for c in contexto[-2:])
+        )
+        if len(norm) < 8 or not (tema or alvo or seguimento):
             return False, "prefiltro"
         if self.classificador:
             r = self.classificador.relevante(texto, contexto)
             if r is not None:
                 return r, "ia"
-        # IA indisponível: decide por regra. Um ticker solto não basta; com palavra de ação, sim.
+        # IA indisponível: decide por regra, e aí o seguimento não basta (sem IA não dá para julgar o contexto).
         return bool(tema or (alvo and _RE_ACAO.search(norm))), "regra"
 
     def _montar_resposta(self, texto: str, contexto: list[str]) -> tuple[str, list[dict], str]:

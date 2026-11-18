@@ -151,3 +151,17 @@ def test_sem_ia_mas_com_ficha_nao_diz_que_nao_encontrou(montar):
     resposta, _, camada = robo._montar_resposta("qual a orientacao para Raizen?", [])
     assert "não encontrei" not in resposta.lower() and "Raízen" in resposta
     assert camada.endswith("ficha-sem-ia")
+
+
+def test_seguimento_chega_ate_a_ia_mas_nao_passa_sozinho_na_regra(montar):
+    ctx = ["joao: quando sai o resgate do INBR32?"]
+    seguimento = "Mas quando vai creditar na conta?"
+
+    sim = type("Sim", (), {"relevante": lambda self, t, c: True})()
+    robo, _ = montar(classificador=sim)
+    assert robo._relevante(seguimento, ctx) == (True, "ia")        # com IA, o contexto é considerado
+    assert robo._relevante(seguimento, []) == (False, "prefiltro")  # sem conversa anterior, nem chega na IA
+
+    robo, _ = montar(classificador=SemIA())
+    assert robo._relevante(seguimento, ctx)[0] is False             # sem IA, o robô não arrisca
+    assert robo._relevante("alguem viu o jogo ontem?", ctx)[0] is False
