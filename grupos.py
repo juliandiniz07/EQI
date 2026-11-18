@@ -264,7 +264,7 @@ class RoboDeGrupos:
         achados, ampliado = res.eventos, res.ampliado
         mostrados, extra = atendimento.contexto_eventos(res, it, MAX_EVENTOS_GRUPO, 1500, ("empresa", "data", "assunto", "tipo_evento_rotulo", "tipo_ativo"))
         dados = {
-            "canal": "grupo de WhatsApp: responda em até ~80 palavras, sem markdown, no máximo 2 parágrafos",
+            "canal": "grupo de WhatsApp: sem markdown. Prefira a resposta completa à resposta curta: não corte datas, valores, condições nem o prazo que o assessor precisa. Até ~130 palavras e 3 parágrafos curtos.",
             "hoje": self.hoje().strftime("%d/%m/%Y"),
             "total_encontrado": len(achados), "mostrando": len(mostrados), "periodo_ampliado": ampliado,
             **extra,

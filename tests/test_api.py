@@ -217,3 +217,8 @@ def test_prompt_manda_ser_direto_e_nao_listar_outra_empresa():
     p = api.SYSTEM_PROMPT
     assert "NÃO narre a busca" in p and "encontrei N eventos" in p
     assert "NUNCA liste eventos" in p and "SOMENTE eventos da empresa" in p
+
+
+def test_prompt_exige_precisao():
+    p = api.SYSTEM_PROMPT
+    assert "PRECISÃO ACIMA DE TUDO" in p and "Nunca calcule" in p and "não tenho isso" in p

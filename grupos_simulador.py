@@ -20,7 +20,8 @@ PASTA = Path(__file__).resolve().parent
 load_dotenv(PASTA / ".env")
 logging.basicConfig(level=os.getenv("LOG_NIVEL", "WARNING"), format="%(levelname)s %(name)s: %(message)s")
 
-import api  # noqa: E402  (depois do load_dotenv, para a chave do Gemini já estar no ambiente)
+import api  # noqa: E402
+import conhecimento  # noqa: E402  (depois do load_dotenv, para a chave do Gemini já estar no ambiente)
 import grupos  # noqa: E402
 from consulta import Interpretador  # noqa: E402
 
@@ -57,11 +58,19 @@ def responder(robo: grupos.RoboDeGrupos, pergunta: str, contexto: list[str]) -> 
     if not relevante:
         print(f"DECISÃO: ficaria quieto (não é assunto dele) [{camada}]")
         return
-    resposta, _, camada_resp = robo._montar_resposta(pergunta, contexto)
+    resposta, mostrados, camada_resp = robo._montar_resposta(pergunta, contexto)
     print(f"DECISÃO: responderia [{camada}/{camada_resp}]")
     print("RESPOSTA:")
     for linha in resposta.splitlines():
         print("   " + linha)
+    fichas = conhecimento.buscar(pergunta, [{"role": "user", "content": c} for c in contexto], hoje=robo.hoje())
+    print("FONTE:")
+    for f in fichas:
+        print(f"   ficha interna: {f.arquivo} ({f.empresa})")
+    for e in mostrados[:5]:
+        print(f"   evento CVM: {e.get('data', '')} {e.get('empresa', '')} — {str(e.get('assunto', ''))[:60]}")
+    if not fichas and not mostrados:
+        print("   (nenhuma: confira se a resposta não afirma nada que não tenha de onde sair)")
 
 
 def main() -> None:
