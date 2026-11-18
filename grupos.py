@@ -85,6 +85,14 @@ def _id_grupo(valor: str | None) -> str:
     return re.sub(r"(-group|@g\.us)$", "", v)
 
 
+_RE_PERGUNTA = re.compile(r"\?|^(?:como|quando|onde|qual|quais|quem|quanto|quantos|por ?que|pq|sera|tem|teve|alguem|da pra|e possivel)\b")
+
+
+def _parece_pergunta(texto: str) -> bool:
+    """Mensagem que pergunta algo — e portanto não é resposta à pergunta de outra pessoa."""
+    return bool(_RE_PERGUNTA.search(eventos.termo(texto)))
+
+
 def _limpar(texto: str) -> str:
     return " ".join((texto or "").split())
 
@@ -296,8 +304,13 @@ class RoboDeGrupos:
         if self.cfg.espera_seg and self.cfg.modo == "ativo":
             self.dormir(self.cfg.espera_seg)
             with self._lock:
-                alguem_respondeu = any(q != quem for t, q, _ in self._recentes[grupo] if t > time.monotonic() - self.cfg.espera_seg - 1)
-            if alguem_respondeu:  # um colega já entrou na conversa: o robô não atropela
+                desde = time.monotonic() - self.cfg.espera_seg - 1
+                # Só conta como resposta o que NÃO é pergunta: uma pergunta nova de um colega é outra conversa,
+                # e não motivo para deixar quem perguntou sem resposta.
+                alguem_respondeu = any(
+                    q != quem and not _parece_pergunta(t) for tempo, q, t in self._recentes[grupo] if tempo > desde
+                )
+            if alguem_respondeu:  # um colega já respondeu: o robô não atropela
                 self._log(grupo, quem, texto, "ignorado:humano_respondeu", camada)
                 return "humano"
         ancora = self._ancora(grupo, m.get("proprias") or [], m["contexto"])

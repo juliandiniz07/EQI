@@ -199,3 +199,20 @@ def test_resposta_cita_a_pergunta_no_grupo(montar):
     assert enviador.enviadas, "deveria ter respondido"
     citado = enviador.citadas[0]
     assert citado["key"]["id"] and citado["message"]["conversation"] == "teve alguma OPA recente?"
+
+
+def test_pergunta_de_outro_colega_nao_cancela_a_resposta(montar):
+    """A pergunta; B pergunta outra coisa no meio da espera; A continua merecendo resposta."""
+    robo, enviador = montar(GRUPOS_ESPERA_SEG="20")
+    robo.dormir = lambda s: None
+    _, mA = robo.receber(msg("quando termina a venda do INBR32?", mid="a1", quem="5511A"))
+    robo.receber(msg("Como envio uma ordem?", mid="b1", quem="5511B"))  # entra na janela de espera
+    assert robo.processar(mA) == "enviado"
+
+
+def test_resposta_de_colega_cancela_a_resposta(montar):
+    robo, enviador = montar(GRUPOS_ESPERA_SEG="20")
+    robo.dormir = lambda s: None
+    _, mA = robo.receber(msg("quando termina a venda do INBR32?", mid="a2", quem="5511A"))
+    robo.receber(msg("ja respondi ele: o prazo vai ate 17/11", mid="b2", quem="5511B"))
+    assert robo.processar(mA) == "humano"
