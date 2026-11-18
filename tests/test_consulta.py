@@ -124,3 +124,31 @@ def test_seguimento_com_conectivo_herda_a_empresa(interp):
     h = [{"role": "user", "content": "qual o prazo da subscrição de Raízen?"}]
     for frase in ("Mas quando vence?", "Entao o cliente precisa pagar?", "Ok, e o prazo?"):
         assert interp.interpretar(frase, h, hoje=HOJE).empresa == "Raízen", frase
+
+
+def test_apelidos_json_esta_bem_formado():
+    """Uma empresa aninhada dentro da lista de outra derruba o robô com TypeError."""
+    import json
+    from pathlib import Path
+
+    dados = json.loads((Path(__file__).resolve().parent.parent / "apelidos.json").read_text(encoding="utf-8"))
+    vistos = set()
+    for e in dados["empresas"]:
+        assert {"nome", "apelidos", "busca"} <= set(e), e
+        for campo in ("apelidos", "busca"):
+            for item in e[campo]:
+                assert isinstance(item, str), f"{e['nome']}: {campo} tem um objeto no lugar de texto ({item!r})"
+                assert item.strip(), f"{e['nome']}: {campo} tem item vazio"
+        assert e["nome"].lower() not in vistos, f"empresa repetida: {e['nome']}"
+        vistos.add(e["nome"].lower())
+
+
+def test_interpreta_todas_as_empresas_sem_quebrar(interp):
+    """Passa o nome de cada empresa pelo interpretador: nenhum pode levantar erro."""
+    import json
+    from pathlib import Path
+
+    dados = json.loads((Path(__file__).resolve().parent.parent / "apelidos.json").read_text(encoding="utf-8"))
+    for e in dados["empresas"]:
+        for apelido in e["apelidos"]:
+            interp.interpretar(f"teve algo de {apelido}?", hoje=HOJE)
