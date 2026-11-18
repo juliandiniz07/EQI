@@ -121,3 +121,33 @@ def test_webhook_exige_segredo(montar, banco, monkeypatch):
     assert c.post("/evolution/webhook/errado", json=msg("teve OPA?")).status_code == 404
     r = c.post("/evolution/webhook/seg", json=msg("oi", grupo="5511@s.whatsapp.net"))
     assert r.status_code == 200 and r.json()["status"].startswith("ignorado")
+
+
+class SemIA:
+    """Classificador que nunca responde: força a decisão por regra."""
+
+    def relevante(self, texto, contexto):
+        return None
+
+
+def test_triagem_por_regra_reconhece_empresa_com_ficha(montar):
+    robo, _ = montar(classificador=SemIA())
+    # nome de empresa que só aparece nas fichas (sem ticker e sem palavra de evento na frase)
+    assert robo._relevante("qual a orientacao para Raizen?", [])[0] is True
+    assert robo._relevante("o cliente do RBRR11 precisa fazer alguma coisa?", [])[0] is True
+    assert robo._relevante("qual o prazo para trocar RAPT3?", [])[0] is True
+
+
+def test_triagem_por_regra_ignora_conversa_do_grupo(montar):
+    robo, _ = montar(classificador=SemIA())
+    for frase in ("bom dia pessoal, tudo certo?", "alguem viu o jogo ontem?", "qual o CDI hoje?",
+                  "vale a pena comprar PETR4 agora?", "manda o contato do cliente"):
+        assert robo._relevante(frase, [])[0] is False, frase
+
+
+def test_sem_ia_mas_com_ficha_nao_diz_que_nao_encontrou(montar):
+    robo, _ = montar(classificador=SemIA())
+    robo.redator = None  # IA fora do ar
+    resposta, _, camada = robo._montar_resposta("qual a orientacao para Raizen?", [])
+    assert "não encontrei" not in resposta.lower() and "Raízen" in resposta
+    assert camada.endswith("ficha-sem-ia")

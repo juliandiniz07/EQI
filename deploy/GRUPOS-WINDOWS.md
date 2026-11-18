@@ -7,6 +7,27 @@ Para o teste de verdade (o robô respondendo no grupo), veja `GRUPOS.md`, que us
 
 ---
 
+## Caminho rápido: simular antes de instalar nada
+
+Antes do Docker e do chip, dá para ver a qualidade das respostas em um minuto. Na pasta do projeto:
+
+```
+python grupos_simulador.py
+```
+
+Cole perguntas reais que aparecem nos seus grupos e veja, para cada uma, se o robô responderia ou ficaria
+quieto, e com que texto. Nada é enviado a lugar nenhum, e não precisa de Docker, chip nem WhatsApp.
+
+Para testar várias de uma vez, coloque uma pergunta por linha num arquivo e rode:
+
+```
+python grupos_simulador.py --arquivo perguntas.txt
+```
+
+Se as respostas estiverem boas, siga para o teste no WhatsApp de verdade, abaixo.
+
+---
+
 ## Antes de começar
 
 1. **Docker Desktop instalado e aberto.** Confira com `docker --version`.

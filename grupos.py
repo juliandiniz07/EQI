@@ -38,8 +38,16 @@ _RE_TEMA = re.compile(
     r"|recuperac|falenc|\brj\b|reestrutura|cancelamento|deslist|subscric|aumento de capital|direito de preferencia"
     r"|\bsobras?\b|bonificac|desdobr|grupament|\bsplit\b|\binplit\b|emiss(?:ao|oes)|follow ?on|\bbdr\b|resgate"
     r"|conversao|fato relevante|comunicado ao mercado|evento corporativo|liquidac|\bfiis?\b|oferta de cotas"
+    r"|permuta|leilao|assembleia|consulta formal|incorporac|dilui|homologac"
 )
 _RE_TICKER = re.compile(r"\b[a-z]{4}\d{1,2}\b")
+# Palavras de ação: sozinhas não dizem nada, mas junto de um ticker ou de uma empresa com ficha, sim.
+_RE_ACAO = re.compile(
+    r"orientac|recomendac|\bprazo\b|ader(?:ir|e|iu|imos)|\bades(?:ao|oes)\b|\bvot(?:ar|o|ou|acao)\b|manifestac"
+    r"|o que fazer|o que (?:eu |a gente )?fa[czg]|como (?:faz|fazer|proced|participa)|participar|preciso fazer"
+    r"|data limite|ate quando|vence|pendencia|preco medio|custo medio|o que (?:e|significa|aconteceu)"
+    r"|faze?r\b|\bfaco\b|subscrev|troca[r]?\b|vender os direitos"
+)
 
 PROMPT_CLASSIFICADOR = """\
 Você filtra mensagens de grupos de WhatsApp de assessores de investimento. Responda SOMENTE um JSON \
@@ -202,14 +210,17 @@ class RoboDeGrupos:
 
     def _relevante(self, texto: str, contexto: list[str]) -> tuple[bool, str]:
         norm = eventos.termo(texto)
-        if len(norm) < 8 or not (_RE_TEMA.search(norm) or _RE_TICKER.search(norm)):
+        tema = bool(_RE_TEMA.search(norm))
+        # "alvo" = a mensagem aponta para um ativo nosso: um ticker, ou uma empresa que tem ficha interna
+        alvo = bool(_RE_TICKER.search(norm)) or bool(conhecimento.buscar(texto, hoje=self.hoje()))
+        if len(norm) < 8 or not (tema or alvo):
             return False, "prefiltro"
         if self.classificador:
             r = self.classificador.relevante(texto, contexto)
             if r is not None:
                 return r, "ia"
-        # IA indisponível: decide por regra (precisa de tema de evento, não só de um ticker solto)
-        return bool(_RE_TEMA.search(norm)), "regra"
+        # IA indisponível: decide por regra. Um ticker solto não basta; com palavra de ação, sim.
+        return bool(tema or (alvo and _RE_ACAO.search(norm))), "regra"
 
     def _montar_resposta(self, texto: str, contexto: list[str]) -> tuple[str, list[dict], str]:
         historico = [{"role": "user", "content": c} for c in contexto]
@@ -241,6 +252,10 @@ class RoboDeGrupos:
         camada = "ia"
         if not resp:
             resp, camada = self.resposta_sem_ia(it, mostrados, len(achados), ampliado), "regra"
+            if fichas and not mostrados:  # há material interno; seria errado dizer que não encontramos nada
+                resp = (f"Tenho o material de {fichas[0].empresa} aqui, mas não consegui redigir a resposta agora. "
+                        "Tente de novo em alguns instantes ou consulte o assistente no navegador.")
+                camada = "regra/ficha-sem-ia"
         return resp, mostrados, camada
 
     def processar(self, m: dict) -> str:
