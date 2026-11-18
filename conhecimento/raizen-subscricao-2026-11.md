@@ -1,6 +1,6 @@
 ---
 empresa: Raízen
-termos: raizen, raiz55, raiz1, raiz14, raiz16, raiz4
+termos: raizen, raiz, raiz55, raiz1, raiz14, raiz16, raiz4, raiz11
 assunto: aumento de capital, subscricao, direito de preferencia, emissao de acoes
 validade: 2026-12-08
 ---

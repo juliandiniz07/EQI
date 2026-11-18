@@ -211,3 +211,9 @@ def test_consultar_devolve_sugestoes(cliente):
     h = entrar(cliente)
     corpo = cliente.post("/consultar", json={"pergunta": "Teve recuperação judicial?", "historico": []}, headers=h).json()
     assert isinstance(corpo["sugestoes"], list) and corpo["sugestoes"] and all(isinstance(s, str) for s in corpo["sugestoes"])
+
+
+def test_prompt_manda_ser_direto_e_nao_listar_outra_empresa():
+    p = api.SYSTEM_PROMPT
+    assert "NÃO narre a busca" in p and "encontrei N eventos" in p
+    assert "NUNCA liste eventos" in p and "SOMENTE eventos da empresa" in p

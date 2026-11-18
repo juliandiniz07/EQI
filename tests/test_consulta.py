@@ -108,3 +108,13 @@ def test_nao_repete_evento_da_mesma_empresa_com_nome_diferente(banco):
 def test_aumento_de_capital_e_subscricao():
     for t in ["Aumento de capital privado", "Direito de preferência para subscrição", "Aviso aos acionistas - sobras de ações", "Follow-on aprovado"]:
         assert eventos.classificar(t) == "EMISSAO", t
+
+
+def test_reconhece_codigos_das_fichas(interp):
+    casos = {"subscrições de RAIZ pode comprar no secundário?": "Raízen",
+             "qual o prazo da Randoncorp?": "Randoncorp",
+             "quantas FRAS3 o cliente recebe?": "Frasle Mobility",
+             "e o BC Fund?": "BC Fund",
+             "o que fazer com PCIP11?": "Pátria Crédito Imobiliário"}
+    for pergunta, esperado in casos.items():
+        assert interp.interpretar(pergunta, hoje=HOJE).empresa == esperado, pergunta
