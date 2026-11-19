@@ -412,12 +412,16 @@ def criar_app(redator=None, interpretador: Interpretador | None = None, hoje=Non
 
         documentos, duvidas = [], None
         fichas = conhecimento.buscar(dados.pergunta, historico, hoje=hoje())
-        vencidas = conhecimento.buscar_vencidas(dados.pergunta, historico, hoje=hoje()) if not fichas else []
+        # Pergunta geral ("quais empresas estão com aumento de capital?"): acha pela natureza do evento
+        tema = conhecimento.buscar_por_tema(dados.pergunta, hoje=hoje()) if not fichas else []
+        vencidas = conhecimento.buscar_vencidas(dados.pergunta, historico, hoje=hoje()) if not (fichas or tema) else []
         if fichas:
             contexto.update(conhecimento.contexto(fichas))
+        elif tema:
+            contexto.update(conhecimento.contexto_tema(tema))
         elif vencidas:
             contexto.update(conhecimento.contexto_vencidas(vencidas, hoje()))
-        if redator and not fichas and not vencidas and atendimento.pergunta_especifica(dados.pergunta):
+        if redator and not (fichas or tema or vencidas) and atendimento.pergunta_especifica(dados.pergunta):
             documentos, duvidas = atendimento.documentos_para_pergunta(redator, dados.pergunta, encontrados)
             if documentos or duvidas:
                 contexto.update(atendimento.contexto_documentos(documentos, duvidas))

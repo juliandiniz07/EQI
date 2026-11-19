@@ -89,3 +89,25 @@ def test_instrucao_proibe_aviso_generico_de_suitability():
     ins = conhecimento.INSTRUCAO_FICHAS
     assert "NÃO encerre a resposta com aviso genérico" in ins and "suitability" in ins
     assert "complete com o lembrete de suitability" not in ins
+
+
+def test_busca_por_tema_acha_sem_citar_a_empresa(tmp_path):
+    (tmp_path / "r.md").write_text(
+        "---\nempresa: Raízen\ntermos: raizen, raiz55\nassunto: aumento de capital, subscricao\nvalidade: 2026-12-08\n---\nPreço: R$ 0,25.\n",
+        encoding="utf-8")
+    hoje = date(2026, 11, 19)
+    achadas = conhecimento.buscar_por_tema("quais empresas estão com aumentos de capital?", hoje, tmp_path)
+    assert [f.empresa for f in achadas] == ["Raízen"]  # plural também casa
+    assert conhecimento.buscar_por_tema("qual o CDI hoje?", hoje, tmp_path) == []
+    assert conhecimento.buscar_por_tema("bom dia pessoal", hoje, tmp_path) == []
+
+
+def test_busca_por_tema_ignora_ficha_vencida(tmp_path):
+    (tmp_path / "r.md").write_text(
+        "---\nempresa: Raízen\ntermos: raizen\nassunto: aumento de capital\nvalidade: 2026-01-01\n---\nx\n", encoding="utf-8")
+    assert conhecimento.buscar_por_tema("aumento de capital", date(2026, 11, 19), tmp_path) == []
+
+
+def test_contexto_tema_manda_usar_como_principal():
+    ins = conhecimento.INSTRUCAO_TEMA
+    assert "parte principal da resposta" in ins and "NÃO diga que a resposta veio de ficha" in ins

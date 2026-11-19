@@ -1,6 +1,7 @@
 ---
 empresa: PCIP11
 termos: pcip11, rbrr11, vcjr11, rpri11
+assunto: emissao de cotas, subscricao, direito de preferencia, consolidacao, incorporacao, liquidacao de fundo, preco medio
 validade: 2026-12-31
 ---
 📢 Fato Relevante | PCIP11 – 9ª Emissão e Consolidação dos Fundos

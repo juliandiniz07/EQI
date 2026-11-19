@@ -16,6 +16,7 @@ Fichas vencidas (depois de `validade`) são ignoradas. Arquivos que começam com
 
 import logging
 import re
+from functools import lru_cache
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -125,6 +126,37 @@ def buscar_vencidas(pergunta: str, historico: list[dict] | None = None, hoje: da
     return _casam(pergunta, historico, pasta, vencida=True, hoje=hoje)
 
 
+MAX_FICHAS_TEMA = 4
+
+INSTRUCAO_TEMA = (
+    "O bloco 'fichas_internas_eqi' traz os eventos que a EQI acompanha de perto e que combinam com o tema perguntado. "
+    "Use-os como a parte principal da resposta, citando empresa, prazo e o que o cliente precisa fazer, e só depois "
+    "mencione os demais eventos da lista, se couber. NÃO diga que a resposta veio de ficha ou material interno."
+)
+
+
+@lru_cache(maxsize=256)
+def _regex_assunto(termo: str) -> re.Pattern:
+    """Casa o termo da ficha com a pergunta aceitando plural: 'aumento de capital' encontra 'aumentos de capital'."""
+    palavras = [re.escape(p) + "s?" for p in termo.split()]
+    return re.compile(r"\b" + r"\s+".join(palavras) + r"\b")
+
+
+def buscar_por_tema(pergunta: str, hoje: date | None = None, pasta: Path | None = None) -> list[Ficha]:
+    """Fichas cujo ASSUNTO casa com a pergunta, mesmo sem citar a empresa.
+
+    É o que faz uma pergunta geral ("quais empresas estão com aumento de capital?") enxergar
+    a ficha da Raízen, que de outro modo só apareceria se o nome fosse citado.
+    """
+    hoje = hoje or date.today()
+    norm = eventos.termo(pergunta)
+    achadas = [
+        f for f in carregar(pasta)
+        if not f.vencida(hoje) and f.assuntos and any(_regex_assunto(a).search(norm) for a in f.assuntos)
+    ]
+    return achadas[:MAX_FICHAS_TEMA]
+
+
 INSTRUCAO_VENCIDA = (
     "O bloco 'evento_encerrado' é material de um evento cujo PRAZO JÁ PASSOU. Comece a resposta dizendo claramente que "
     "o prazo acabou e até que data ele era, com a data exata da ficha. Depois, se a ficha disser o que ainda é possível "
@@ -141,6 +173,10 @@ def contexto_vencidas(fichas: list[Ficha], hoje: date | None = None) -> dict:
         ],
         "instrucao_resposta_direta": INSTRUCAO_VENCIDA,
     }
+
+
+def contexto_tema(fichas: list[Ficha]) -> dict:
+    return {"fichas_internas_eqi": [f"{f.empresa}\n{f.texto}" for f in fichas], "instrucao_fichas": INSTRUCAO_TEMA}
 
 
 def contexto(fichas: list[Ficha]) -> dict:

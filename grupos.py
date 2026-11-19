@@ -275,12 +275,15 @@ class RoboDeGrupos:
             dados["ticker_da_empresa"] = it.ticker
         documentos = []
         fichas = conhecimento.buscar(texto, historico, hoje=self.hoje())
-        vencidas = conhecimento.buscar_vencidas(texto, historico, hoje=self.hoje()) if not fichas else []
+        tema = conhecimento.buscar_por_tema(texto, hoje=self.hoje()) if not fichas else []
+        vencidas = conhecimento.buscar_vencidas(texto, historico, hoje=self.hoje()) if not (fichas or tema) else []
         if fichas:
             dados.update(conhecimento.contexto(fichas))
+        elif tema:
+            dados.update(conhecimento.contexto_tema(tema))
         elif vencidas:
             dados.update(conhecimento.contexto_vencidas(vencidas, self.hoje()))
-        if self.redator and not fichas and not vencidas and atendimento.pergunta_especifica(texto):
+        if self.redator and not (fichas or tema or vencidas) and atendimento.pergunta_especifica(texto):
             documentos, duvidas = atendimento.documentos_para_pergunta(self.redator, texto, achados)
             if documentos or duvidas:
                 dados.update(atendimento.contexto_documentos(documentos, duvidas))

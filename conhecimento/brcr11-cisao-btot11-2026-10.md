@@ -1,6 +1,7 @@
 ---
 empresa: BC Fund FII
 termos: brcr11, btot11, bc fund, brcr, btot
+assunto: cisao, consulta formal, votacao, assembleia, reorganizacao
 validade: 2027-02-28
 ---
 Consulta Formal | BC Fund FII (BRCR11) – Reorganização do Portfólio
