@@ -46,7 +46,9 @@ services:
       - dados:/dados
 
   evolution:
-    image: evoapicloud/evolution-api:v2.3.7
+    # Imagem oficial, como a documentação da Evolution indica. Depois que estiver funcionando,
+    # vale trocar 'latest' pela versão exata que subiu, para uma atualização futura não quebrar nada.
+    image: evoapicloud/evolution-api:latest
     restart: unless-stopped
     environment:
       SERVER_URL: http://evolution:8080
