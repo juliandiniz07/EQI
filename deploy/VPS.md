@@ -21,6 +21,10 @@ Tempo: cerca de 40 minutos, quase todos esperando o servidor baixar as coisas.
 
 ---
 
+> **Mudou o `.env`? Use `docker compose up -d`, não `restart`.** O `restart` só reinicia o processo com a
+> configuração que já estava carregada; quem relê o arquivo e recria o contêiner é o `up -d`. Para mudança de
+> código vinda do `git pull`, o `restart` basta.
+
 ## 1. Entrar no servidor
 
 No seu computador, no cmd:
@@ -127,7 +131,7 @@ O QR Code aparece **desenhado no próprio terminal**. Leia com o celular do chip
 WhatsApp > Configurações > Dispositivos conectados > Conectar dispositivo.
 
 Se preferir não usar QR Code, preencha `NUMERO_ROBO` no `.env` com o número do chip (só dígitos, com DDI),
-reinicie com `docker compose restart api` e rode `eqi grupos_setup.py qr`:
+recrie o contêiner com `docker compose up -d api` e rode `eqi grupos_setup.py qr`:
 em vez do QR, vem um código de 8 dígitos para digitar no celular.
 
 Confira a conexão:
@@ -147,7 +151,7 @@ eqi grupos_setup.py grupos
 Copie a linha `GRUPOS_PERMITIDOS=...` para o `.env` (`nano .env`), e então:
 
 ```bash
-docker compose restart api coletor
+docker compose up -d api coletor
 eqi grupos_setup.py webhook
 ```
 
@@ -189,7 +193,7 @@ docker compose logs -f api
 (`Ctrl+C` sai do acompanhamento dos registros, sem derrubar nada.)
 
 **Soltar o robô nos grupos**, quando decidir: troque para `GRUPOS_MODO=ativo` no `.env` e rode
-`docker compose restart api`.
+`docker compose up -d api`.
 
 **Backup do que importa:** o banco de eventos é reconstruível a partir da CVM, então o que não pode
 se perder são as fichas (que estão no GitHub) e o `.env` (que não está em lugar nenhum). Guarde uma cópia
@@ -204,7 +208,7 @@ você subiu. Corrija o apontamento, espere alguns minutos e rode
 `docker compose restart caddy`.
 
 **"Robô de grupos habilitado" não aparece nos registros.** Faltou `GRUPOS_WEBHOOK_SEGREDO` ou
-`GRUPOS_PERMITIDOS` no `.env`, ou o `restart api` depois de editar.
+`GRUPOS_PERMITIDOS` no `.env`, ou faltou recriar o contêiner com `docker compose up -d api` depois de editar.
 
 **O WhatsApp desconectou.** Rode `eqi grupos_setup.py qr` e leia o código de novo.
 
