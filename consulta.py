@@ -58,6 +58,11 @@ _MESES = {
 }
 
 
+
+def eh_seguimento(texto: str) -> bool:
+    """A frase continua a pergunta anterior ("e o prazo?", "mas quando vence?") em vez de abrir assunto novo."""
+    return bool(_RE_SEGUIMENTO.search(_termo(texto)))
+
 @dataclass
 class Interpretacao:
     empresa: str | None = None  # rótulo para exibir

@@ -111,3 +111,12 @@ def test_busca_por_tema_ignora_ficha_vencida(tmp_path):
 def test_contexto_tema_manda_usar_como_principal():
     ins = conhecimento.INSTRUCAO_TEMA
     assert "parte principal da resposta" in ins and "NÃO diga que a resposta veio de ficha" in ins
+
+
+def test_pergunta_nova_nao_herda_o_assunto_de_quem_falou_antes(tmp_path):
+    """No grupo, um assessor pergunta de RAIZ4 e outro muda de assunto: a ficha não pode vazar."""
+    p = pasta(tmp_path)
+    hoje = date(2026, 11, 12)
+    hist = [{"role": "user", "content": "tão sabendo de algo sobre RAIZ55?"}]
+    assert conhecimento.buscar("quais empresas pagam dividendos em dezembro?", hist, hoje, p) == []
+    assert conhecimento.buscar("e o prazo?", hist, hoje, p)  # continuação continua herdando

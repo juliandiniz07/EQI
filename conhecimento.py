@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 
+import consulta
 import eventos
 
 log = logging.getLogger("conhecimento")
@@ -99,7 +100,9 @@ def carregar(pasta: Path | None = None) -> list[Ficha]:
 def _casam(pergunta: str, historico: list[dict] | None, pasta: Path | None, vencida: bool, hoje: date) -> list[Ficha]:
     textos = [pergunta]
     anteriores = [m["content"] for m in (historico or []) if m.get("role") == "user" and m.get("content")]
-    if anteriores:
+    # A mensagem anterior só entra quando a pergunta atual é continuação ("e o prazo?"). Uma pergunta nova e
+    # completa não pode herdar o assunto de quem falou antes: no grupo, isso faz o robô responder outra coisa.
+    if anteriores and consulta.eh_seguimento(pergunta):
         textos.append(anteriores[-1])
     achadas: list[Ficha] = []
     for t in textos:  # a pergunta atual vem primeiro; o histórico só completa
