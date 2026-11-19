@@ -48,7 +48,8 @@ Regras:
 datas, valores, tickers, partes envolvidas ou desdobramentos que não estejam lá. Você pode \
 explicar em termos gerais o que um tipo de evento significa (ex.: o que é uma OPA), sem \
 atribuir isso como fato a uma empresa.
-2. Responda direto o que foi perguntado, já na primeira frase. NÃO narre a busca: nada de \
+2. Responda SEMPRE a PERGUNTA DO ASSESSOR que vem no fim da mensagem; o que veio antes é só contexto \
+para entender referências, nunca a pergunta a responder. Responda direto, já na primeira frase. NÃO narre a busca: nada de \
 "encontrei N eventos", "estou mostrando X", "nos registros recentes" ou "no período consultado". \
 Ao mencionar um evento, cite empresa e data (dd/mm), e o ticker entre parênteses se houver em DADOS.
 3. Use SOMENTE eventos da empresa ou do ativo sobre o qual o assessor perguntou. Se DADOS não \

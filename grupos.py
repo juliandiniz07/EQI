@@ -259,7 +259,11 @@ class RoboDeGrupos:
         return ancora or contexto
 
     def _montar_resposta(self, texto: str, contexto: list[str], ancora: list[str] | None = None) -> tuple[str, list[dict], str]:
-        historico = [{"role": "user", "content": c} for c in (ancora if ancora is not None else contexto)]
+        # O histórico serve para a INTERPRETAÇÃO resolver referências ("e o prazo?"). Ele NÃO vai para a IA como
+        # turno de conversa: num grupo, duas perguntas seguidas de pessoas diferentes faziam a IA responder a
+        # anterior usando os dados da atual. Para a IA, a mensagem anterior entra em DADOS, rotulada.
+        anteriores = list(ancora if ancora is not None else contexto)
+        historico = [{"role": "user", "content": c} for c in anteriores]
         with eventos.conectar() as con:
             it = self.interp.interpretar(texto, historico, hoje=self.hoje(), nomes_no_banco=eventos.empresas_conhecidas(con))
             res = atendimento.buscar_para_pergunta(con, it)
@@ -273,6 +277,12 @@ class RoboDeGrupos:
         }
         if it.ticker:
             dados["ticker_da_empresa"] = it.ticker
+        if anteriores:
+            dados["mensagem_anterior_do_grupo"] = anteriores[-1][:500]
+            dados["instrucao_mensagem_anterior"] = (
+                "Serve APENAS para entender referências da pergunta atual ('e o prazo?', 'mas quando vence?'). "
+                "NUNCA responda a ela: responda sempre a PERGUNTA DO ASSESSOR."
+            )
         documentos = []
         fichas = conhecimento.buscar(texto, historico, hoje=self.hoje())
         tema = conhecimento.buscar_por_tema(texto, hoje=self.hoje()) if not fichas else []
@@ -288,9 +298,9 @@ class RoboDeGrupos:
             if documentos or duvidas:
                 dados.update(atendimento.contexto_documentos(documentos, duvidas))
         if self.redator and documentos:
-            resp = self.redator.redigir(texto, historico, dados, documentos=documentos)
+            resp = self.redator.redigir(texto, [], dados, documentos=documentos)
         else:
-            resp = self.redator.redigir(texto, historico, dados) if self.redator else None
+            resp = self.redator.redigir(texto, [], dados) if self.redator else None
         camada = "ia"
         if not resp:
             resp, camada = self.resposta_sem_ia(it, mostrados, len(achados), ampliado), "regra"

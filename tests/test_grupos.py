@@ -227,3 +227,21 @@ def test_evento_encerrado_e_respondido_dizendo_que_acabou(montar, monkeypatch, t
     assert robo._relevante("qual o prazo para trocar RAPT3?", [])[0] is True  # não cala por estar vencida
     resposta, _, camada = robo._montar_resposta("qual o prazo para trocar RAPT3?", [])
     assert "10/01/2026" in resposta and "encerrou" in resposta and camada.endswith("vencida-sem-ia")
+
+
+def test_ia_recebe_so_a_pergunta_atual_e_a_anterior_rotulada(montar):
+    """Duas perguntas seguidas de pessoas diferentes faziam a IA responder a errada."""
+    registro = {}
+
+    class Espiao:
+        def redigir(self, pergunta, historico, dados, documentos=None):
+            registro.update(pergunta=pergunta, historico=historico, dados=dados)
+            return "resposta"
+
+    robo, _ = montar()
+    robo.redator = Espiao()
+    robo._montar_resposta("e o banco inter?", [], ancora=["quais os prazos da Raízen?"])
+    assert registro["historico"] == []  # nada entra como turno de conversa
+    assert registro["pergunta"] == "e o banco inter?"
+    assert registro["dados"]["mensagem_anterior_do_grupo"] == "quais os prazos da Raízen?"
+    assert "NUNCA responda a ela" in registro["dados"]["instrucao_mensagem_anterior"]
