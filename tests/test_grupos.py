@@ -245,3 +245,9 @@ def test_ia_recebe_so_a_pergunta_atual_e_a_anterior_rotulada(montar):
     assert registro["pergunta"] == "e o banco inter?"
     assert registro["dados"]["mensagem_anterior_do_grupo"] == "quais os prazos da Raízen?"
     assert "NUNCA responda a ela" in registro["dados"]["instrucao_mensagem_anterior"]
+
+
+def test_prompt_do_classificador_cobre_pergunta_informal_sobre_empresa():
+    p = grupos.PROMPT_CLASSIFICADOR
+    assert "o que está acontecendo com a X?" in p
+    assert "palavrão NÃO tornam a mensagem irrelevante" in p

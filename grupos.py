@@ -56,7 +56,11 @@ Você filtra mensagens de grupos de WhatsApp de assessores de investimento. Resp
 relevante=true quando a mensagem pede ou pergunta algo que um banco de EVENTOS CORPORATIVOS da CVM \
 poderia responder: OPA, fusão/incorporação/aquisição, desdobramento/grupamento, recuperação judicial, \
 subscrição/aumento de capital/direito de preferência, cancelamento de registro, BDR/resgate/conversão de \
-ações, fatos relevantes e emissões de FIIs, ou "teve algo da empresa/ativo X?".
+ações, fatos relevantes e emissões de FIIs.
+TAMBÉM é relevante qualquer pergunta sobre a situação de uma empresa ou ativo citado pelo nome ou pelo ticker: \
+"teve algo da X?", "o que está acontecendo com a X?", "alguma novidade da X?", "que história é essa da X?", \
+"como está a X?". Linguagem informal, abreviações ou palavrão NÃO tornam a mensagem irrelevante: olhe o que \
+está sendo perguntado, não como foi escrito.
 relevante=false para cotação/preço-alvo, análise ou recomendação de investimento, política, piadas, \
 cumprimentos, assuntos operacionais, ou quando a mensagem é só uma resposta/comentário de alguém."""
 
