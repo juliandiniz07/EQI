@@ -222,3 +222,8 @@ def test_prompt_manda_ser_direto_e_nao_listar_outra_empresa():
 def test_prompt_exige_precisao():
     p = api.SYSTEM_PROMPT
     assert "PRECISÃO ACIMA DE TUDO" in p and "Nunca calcule" in p and "não tenho isso" in p
+
+
+def test_prompt_proibe_revelar_a_fonte():
+    p = api.SYSTEM_PROMPT
+    assert "NÃO revele de onde tirou a informação" in p and "conforme a ficha" in p
